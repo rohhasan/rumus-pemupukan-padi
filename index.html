@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Rumus Pemupukan Tanaman Padi</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased">
+
+    <div class="max-w-4xl mx-auto p-4 md:p-8">
+        <header class="text-center mb-8 bg-green-700 text-white p-6 rounded-2xl shadow-md">
+            <h1 class="text-2xl md:text-3xl font-bold tracking-wide">RUMUS PEMUPUKAN TANAMAN PADI</h1>
+            <p class="text-green-100 mt-2 text-sm md:text-base">Kalkulator Presisi Dosis, Waktu, dan Target Hasil Pemupukan</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <form id="kalkulatorForm" class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-5" onsubmit="hitungKalkulasi(event)">
+                <h2 class="text-lg font-semibold text-gray-700 border-b pb-2 border-gray-100">⚙️ Parameter Lahan & Budidaya</h2>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Varietas Padi</label>
+                    <select id="varietas" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:outline-none">
+                        <option value="102.5">Varietas Genjah (100 - 105 HSS)</option>
+                        <option value="118.5" selected>Varietas Normal (115 - 122 HSS)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Luas Lahan</label>
+                    <div class="flex space-x-2">
+                        <input type="number" id="luasLahan" step="any" required class="w-2/3 bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:outline-none" placeholder="Masukkan angka">
+                        <select id="satuanLahan" class="w-1/3 bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:outline-none">
+                            <option value="hektar">Hektar</option>
+                            <option value="bata">Bata</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Target Hasil (Ton/Ha)</label>
+                    <input type="number" id="targetHasil" min="4" max="12" step="0.5" value="10" required class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Tanggal Semai</label>
+                        <input type="date" id="tglSemai" required class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-green-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Tanggal Tanam</label>
+                        <input type="date" id="tglTanam" required class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-green-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium p-3 rounded-lg transition shadow-md cursor-pointer text-center">
+                    Hitung Rekomendasi
+                </button>
+            </form>
+
+            <div class="lg:col-span-7 space-y-6">
+                <div id="placeholderHasil" class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center text-gray-400">
+                    <p class="text-5xl mb-3">📊</p>
+                    <p>Silakan isi formulir di samping dan klik tombol **Hitung Rekomendasi** untuk melihat jadwal waktu dan dosis pupuk optimal.</p>
+                </div>
+
+                <div id="kontenHasil" class="hidden space-y-6">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-2">Ringkasan Konversi Lahan</h3>
+                        <p class="text-gray-700">Luas yang dihitung: <span id="resLuasHektar" class="font-bold text-green-700"></span> Ha (<span id="resLuasBata" class="font-semibold text-gray-600"></span> Bata)</p>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h3 class="text-lg font-bold text-gray-700 mb-4 flex items-center gap-2">
+                            <span>📅</span> Jadwal Waktu Pemupukan (Manajemen Air Ber-selang)
+                        </h3>
+                        <div class="relative border-l-2 border-green-200 ml-3 space-y-6">
+                            <div class="relative pl-6">
+                                <span class="absolute -left-[9px] top-1 bg-green-600 w-4 h-4 rounded-full border-2 border-white"></span>
+                                <h4 class="font-semibold text-gray-800 text-sm md:text-base">Pemupukan Dasar (5 HST)</h4>
+                                <p class="text-xs text-gray-500 font-medium mt-0.5">Rekomendasi Tanggal: <span id="dateDasar" class="text-green-700 font-bold"></span></p>
+                                <p class="text-xs text-gray-600 mt-1">Aplikasi seluruh Pupuk Organik + sebagian makro saat air macak-macak.</p>
+                            </div>
+                            <div class="relative pl-6">
+                                <span class="absolute -left-[9px] top-1 bg-green-500 w-4 h-4 rounded-full border-2 border-white"></span>
+                                <h4 class="font-semibold text-gray-800 text-sm md:text-base">Pemupukan Susulan I (<span id="hstSusulan1" class="font-bold"></span> HST)</h4>
+                                <p class="text-xs text-gray-500 font-medium mt-0.5">Rekomendasi Tanggal: <span id="dateSusulan1" class="text-green-700 font-bold"></span></p>
+                                <p class="text-xs text-gray-600 mt-1">Fase kritis pembentukan jumlah anakan aktif maksimum.</p>
+                            </div>
+                            <div class="relative pl-6">
+                                <span class="absolute -left-[9px] top-1 bg-yellow-500 w-4 h-4 rounded-full border-2 border-white"></span>
+                                <h4 class="font-semibold text-gray-800 text-sm md:text-base">Pemupukan Susulan II / Terakhir (<span id="hstSusulan2" class="font-bold"></span> HST)</h4>
+                                <p class="text-xs text-gray-500 font-medium mt-0.5">Rekomendasi Tanggal: <span id="dateSusulan2" class="text-green-700 font-bold"></span></p>
+                                <p class="text-xs text-gray-600 mt-1">Fase Primordia (Bunting Muda). Penguatan bobot isi bulir gabah.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h3 class="text-lg font-bold text-gray-700 mb-4 flex items-center gap-2">
+                            <span>⚖️</span> Dosis Kebutuhan Pupuk Rencana Luas Lahan
+                        </h3>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm text-gray-600">
+                                <thead class="bg-gray-50 text-gray-700 uppercase text-xs">
+                                    <tr>
+                                        <th class="p-3 rounded-l-lg">Jenis Pupuk</th>
+                                        <th class="p-3">Opsi Tunggal</th>
+                                        <th class="p-3 rounded-r-lg">Opsi Majemuk</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr class="bg-emerald-50/50 font-medium">
+                                        <td class="p-3 text-emerald-800">Pupuk Organik Matang</td>
+                                        <td class="p-3 text-emerald-700"><span id="pOrganikTunggal" class="font-bold"></span> kg</td>
+                                        <td class="p-3 text-emerald-700"><span id="pOrganikMajemuk" class="font-bold"></span> kg</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-3 font-semibold text-gray-700">Urea</td>
+                                        <td class="p-3"><span id="pUreaTunggal"></span> kg</td>
+                                        <td class="p-3"><span id="pUreaMajemuk"></span> kg <span class="text-xs text-gray-400 block">(Pendamping)</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-3 font-semibold text-gray-700">SP-36</td>
+                                        <td class="p-3"><span id="pSpTunggal"></span> kg</td>
+                                        <td class="p-3 class text-gray-400">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-3 font-semibold text-gray-700">KCl</td>
+                                        <td class="p-3"><span id="pKclTunggal"></span> kg</td>
+                                        <td class="p-3"><span id="pKclMajemuk"></span> kg <span class="text-xs text-gray-400 block">(Pendamping)</span></td>
+                                    </tr>
+                                    <tr class="bg-blue-50/30">
+                                        <td class="p-3 font-bold text-blue-800">NPK (15-15-15)</td>
+                                        <td class="p-3 text-gray-400">-</td>
+                                        <td class="p-3 font-bold text-blue-700"><span id="pPonskaMajemuk"></span> kg</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-3 italic">*Formulasi dihitung secara linier berbasis target produktivitas berimbang nasional.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function hitungKalkulasi(event) {
+            event.preventDefault();
+
+            // 1. Ambil Data Input
+            const umurPadi = parseFloat(document.getElementById('varietas').value);
+            const luasInput = parseFloat(document.getElementById('luasLahan').value);
+            const satuanLahan = document.getElementById('satuanLahan').value;
+            const targetHasil = parseFloat(document.getElementById('targetHasil').value);
+            const tglSemaiInput = document.getElementById('tglSemai').value;
+            const tglTanamInput = document.getElementById('tglTanam').value;
+
+            // 2. Hitung Konversi Luas Lahan ke Hektar & Bata
+            let luasHektar = 0;
+            let luasBata = 0;
+
+            if (satuanLahan === 'hektar') {
+                luasHektar = luasInput;
+                luasBata = luasInput * 700;
+            } else {
+                luasBata = luasInput;
+                luasHektar = luasInput / 700;
+            }
+
+            // Tampilkan Ringkasan Konversi Luas
+            document.getElementById('resLuasHektar').innerText = luasHektar.toFixed(3);
+            document.getElementById('resLuasBata').innerText = Math.round(luasBata);
+
+            // 3. Logika Perhitungan Penanggalan & Umur (Waktu Pemupukan)
+            const tglSemai = new Date(tglSemaiInput);
+            const tglTanam = new Date(tglTanamInput);
+
+            // Hitung selisih hari antara Tanam dan Semai (Umur persemaian saat pindah tanam)
+            const selisihWaktu = tglTanam.getTime() - tglSemai.getTime();
+            const umurPersemaian = Math.ceil(selisihWaktu / (1000 * 3600 * 24));
+
+            // RUMUS SESUAI INSTRUKSI USER:
+            // Pupuk Terakhir (ke-2) = Umur Padi - Umur Persemaian - 60
+            let hstSusulan2 = Math.round(umurPadi - umurPersemaian - 60);
+            // Pupuk Ke-1 = Waktu pupuk ke-2 dibagi 2
+            let hstSusulan1 = Math.round(hstSusulan2 / 2);
+            // Pemupukan Dasar = 固定 5 HST
+            let hstDasar = 5;
+
+            // Pastikan angka tidak minus akibat input tanggal salah logika
+            if(hstSusulan1 <= hstDasar) hstSusulan1 = hstDasar + 15; 
+            if(hstSusulan2 <= hstSusulan1) hstSusulan2 = hstSusulan1 + 15;
+
+            document.getElementById('hstSusulan1').innerText = hstSusulan1;
+            document.getElementById('hstSusulan2').innerText = hstSusulan2;
+
+            // Konversi Hari HST ke Kalender Tanggal Riil
+            const opsiTanggal = { year: 'numeric', month: 'long', day: 'numeric' };
+            
+            let dateDasarObj = new Date(tglTanam);
+            dateDasarObj.setDate(dateDasarObj.getDate() + hstDasar);
+            document.getElementById('dateDasar').innerText = dateDasarObj.toLocaleDateString('id-ID', opsiTanggal);
+
+            let dateSusulan1Obj = new Date(tglTanam);
+            dateSusulan1Obj.setDate(dateSusulan1Obj.getDate() + hstSusulan1);
+            document.getElementById('dateSusulan1').innerText = dateSusulan1Obj.toLocaleDateString('id-ID', opsiTanggal);
+
+            let dateSusulan2Obj = new Date(tglTanam);
+            dateSusulan2Obj.setDate(dateSusulan2Obj.getDate() + hstSusulan2);
+            document.getElementById('dateSusulan2').innerText = dateSusulan2Obj.toLocaleDateString('id-ID', opsiTanggal);
+
+
+            // 4. Logika Perhitungan Dosis Pupuk Berimbang Berdasarkan Target Hasil
+            // Indeks Pengali per Hektar disesuaikan proporsional dengan target hasil (skala linier target 10 ton)
+            const rasioKebutuhan = targetHasil / 10;
+
+            // Kebutuhan Dasar per Ha untuk Target 10 Ton
+            const basisOrganik = 2000 * rasioKebutuhan;
+            const basisUreaTunggal = 375 * rasioKebutuhan;
+            const basisSpTunggal = 125 * rasioKebutuhan;
+            const basisKclTunggal = 275 * rasioKebutuhan;
+
+            const basisPonskaMajemuk = 400 * rasioKebutuhan;
+            const basisUreaMajemuk = 220 * rasioKebutuhan;
+            const basisKclMajemuk = 175 * rasioKebutuhan;
+
+            // Kalkulasi Berdasarkan Luas Riil Lahan Petani
+            document.getElementById('pOrganikTunggal').innerText = Math.round(basisOrganik * luasHektar);
+            document.getElementById('pOrganikMajemuk').innerText = Math.round(basisOrganik * luasHektar);
+
+            // Opsi Tunggal
+            document.getElementById('pUreaTunggal').innerText = Math.round(basisUreaTunggal * luasHektar);
+            document.getElementById('pSpTunggal').innerText = Math.round(basisSpTunggal * luasHektar);
+            document.getElementById('pKclTunggal').innerText = Math.round(basisKclTunggal * luasHektar);
+
+            // Opsi Majemuk
+            document.getElementById('pPonskaMajemuk').innerText = Math.round(basisPonskaMajemuk * luasHektar);
+            document.getElementById('pUreaMajemuk').innerText = Math.round(basisUreaMajemuk * luasHektar);
+            document.getElementById('pKclMajemuk').innerText = Math.round(basisKclMajemuk * luasHektar);
+
+            // Tampilkan Hasil & Sembunyikan Placeholder
+            document.getElementById('placeholderHasil').classList.add('hidden');
+            document.getElementById('kontenHasil').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
