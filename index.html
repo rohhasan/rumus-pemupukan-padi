@@ -11,11 +11,11 @@
     <div class="max-w-5xl mx-auto p-4 md:p-8">
         <header class="text-center mb-8 bg-green-700 text-white p-6 rounded-2xl shadow-md">
             <h1 class="text-2xl md:text-3xl font-bold tracking-wide">RUMUS PEMUPUKAN TANAMAN PADI</h1>
-            <p class="text-green-100 mt-2 text-sm md:text-base">Kalkulator Presisi Dosis, Waktu, dan Target Hasil Pemupukan</p>
+            <p class="text-green-100 mt-2 text-sm md:text-base">Kalkulator Presisi Dosis, Waktu, Jarak Tanam, dan Populasi Rumpun</p>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <form id="kalkulatorForm" class="lg:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-5 h-fit" onsubmit="hitungKalkulasi(event)">
+            <form id="kalkulatorForm" class="lg:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4 h-fit" onsubmit="hitungKalkulasi(event)">
                 <h2 class="text-lg font-semibold text-gray-700 border-b pb-2 border-gray-100">⚙️ Parameter Lahan</h2>
                 
                 <div>
@@ -35,6 +35,17 @@
                             <option value="bata">Bata</option>
                         </select>
                     </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Model Jarak Tanam</label>
+                    <select id="jarakTanam" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:outline-none text-sm">
+                        <option value="legowo21">Legowo 2:1 (10 cm x 20 cm x 40 cm)</option>
+                        <option value="tegel25">Tegel 25 x 25 cm</option>
+                        <option value="tegel30">Tegel 30 x 30 cm</option>
+                        <option value="tegel35">Tegel 35 x 35 cm</option>
+                        <option value="tegel40">Tegel 40 x 40 cm</option>
+                    </select>
                 </div>
 
                 <div>
@@ -60,19 +71,26 @@
 
             <div class="lg:col-span-8 space-y-6">
                 <div id="placeholderHasil" class="bg-white p-12 rounded-2xl shadow-sm border border-gray-200 text-center text-gray-400">
-                    <p class="text-6xl mb-4">📋</p>
-                    <p class="text-base font-medium">Silakan isi data lahan di samping, kemudian klik tombol <b>Hitung Rekomendasi</b> untuk memunculkan tabel rekomendasi pemupukan sesuai model visual.</p>
+                    <p class="text-6xl mb-4">🌾</p>
+                    <p class="text-base font-medium">Silakan isi data lahan di samping, kemudian klik tombol <b>Hitung Rekomendasi</b> untuk memunculkan tabel rekomendasi beserta hitungan populasi rumpun.</p>
                 </div>
 
                 <div id="kontenHasil" class="hidden space-y-6">
-                    <div class="bg-emerald-800 text-white p-4 rounded-xl shadow-sm flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                    <div class="bg-emerald-800 text-white p-5 rounded-xl shadow-md grid grid-cols-1 md:grid-cols-3 gap-4 text-center md:text-left">
                         <div>
                             <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Rencana Evaluasi Lahan</span>
-                            <p class="text-base font-bold">Luas Hitung: <span id="resLuasHektar"></span> Ha (<span id="resLuasBata"></span> Bata)</p>
+                            <p class="text-lg font-bold"><span id="resLuasHektar"></span> Ha</p>
+                            <span class="text-xs text-emerald-100">(<span id="resLuasBata"></span> Bata / <span id="resLuasM2"></span> m²)</span>
                         </div>
-                        <div class="text-left sm:text-right">
-                            <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Target Produktivitas</span>
-                            <p class="text-base font-bold"><span id="resTarget"></span> Ton / Hektar</p>
+                        <div class="border-y md:border-y-0 md:border-x border-emerald-700/60 py-2 md:py-0 md:px-4">
+                            <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Model Jarak Tanam</span>
+                            <p class="text-lg font-bold text-yellow-300" id="resModelJarak">-</p>
+                            <span class="text-xs text-emerald-100">Kepadatan: <span id="resRumpunPerHa"></span> rumpun/Ha</span>
+                        </div>
+                        <div>
+                            <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Total Populasi Rumpun</span>
+                            <p class="text-2xl font-black text-white" id="resTotalRumpun">0</p>
+                            <span class="text-xs text-emerald-200 font-medium">Target: <span id="resTarget"></span> Ton/Ha</span>
                         </div>
                     </div>
 
@@ -110,7 +128,6 @@
     </div>
 
     <script>
-        // Variabel global untuk menampung data perhitungan terenkapsulasi
         let dataHasilKalkulasi = null;
         let tabAktif = 'tunggal';
 
@@ -121,61 +138,100 @@
             const umurPadi = parseFloat(document.getElementById('varietas').value);
             const luasInput = parseFloat(document.getElementById('luasLahan').value);
             const satuanLahan = document.getElementById('satuanLahan').value;
+            const modelJarak = document.getElementById('jarakTanam').value;
             const targetHasil = parseFloat(document.getElementById('targetHasil').value);
             const tglSemaiInput = document.getElementById('tglSemai').value;
             const tglTanamInput = document.getElementById('tglTanam').value;
 
-            // 2. Hitung Konversi Luas Lahan (1 Ha = 700 Bata)
+            // 2. Hitung Konversi Luas Lahan (1 Ha = 700 Bata = 10.000 m²)
             let luasHektar = satuanLahan === 'hektar' ? luasInput : luasInput / 700;
             let luasBata = satuanLahan === 'bata' ? luasInput : luasInput * 700;
+            let luasM2 = luasHektar * 10000;
 
+            // 3. Logika Perhitungan Jumlah Rumpun Berdasarkan Model Jarak Tanam
+            let rumpunPerHa = 0;
+            let keteranganJarak = "";
+
+            switch (modelJarak) {
+                case 'legowo21':
+                    // Rumus Jalar Legowo 2:1 (10x20x40 cm): (10.000) / (((20+40)/2) * 10 / 10000) = 66.666
+                    rumpunPerHa = 66666;
+                    keteranganJarak = "Legowo 2:1 (10x20x40 cm)";
+                    break;
+                case 'tegel25':
+                    // Tegel 25x25 cm: 10.000 / (0.25 * 0.25) = 160.000
+                    rumpunPerHa = 160000;
+                    keteranganJarak = "Tegel 25 x 25 cm";
+                    break;
+                case 'tegel30':
+                    // Tegel 30x30 cm: 10.000 / (0.3 * 0.3) = 111.111
+                    rumpunPerHa = 111111;
+                    keteranganJarak = "Tegel 30 x 30 cm";
+                    break;
+                case 'tegel35':
+                    // Tegel 35x35 cm: 10.000 / (0.35 * 0.35) = 81.632
+                    rumpunPerHa = 81632;
+                    keteranganJarak = "Tegel 35 x 35 cm";
+                    break;
+                case 'tegel40':
+                    // Tegel 40x40 cm: 10.000 / (0.4 * 0.4) = 62.500
+                    rumpunPerHa = 62500;
+                    keteranganJarak = "Tegel 40 x 40 cm";
+                    break;
+            }
+
+            let totalRumpunLahan = Math.round(rumpunPerHa * luasHektar);
+
+            // Tampilkan komponen informasi populasi rumpun tanaman
             document.getElementById('resLuasHektar').innerText = luasHektar.toFixed(3);
             document.getElementById('resLuasBata').innerText = Math.round(luasBata);
+            document.getElementById('resLuasM2').innerText = Math.round(luasM2).toLocaleString('id-ID');
+            document.getElementById('resModelJarak').innerText = keteranganJarak;
+            document.getElementById('resRumpunPerHa').innerText = rumpunPerHa.toLocaleString('id-ID');
+            document.getElementById('resTotalRumpun').innerText = totalRumpunLahan.toLocaleString('id-ID') + " Rumpun";
             document.getElementById('resTarget').innerText = targetHasil;
 
-            // 3. Eksekusi Rumus Waktu Pemupukan Sesuai Instruksi
+            // 4. Eksekusi Rumus Waktu Pemupukan Sesuai Instruksi
             const tglSemai = new Date(tglSemaiInput);
             const tglTanam = new Date(tglTanamInput);
             const selisihHari = Math.ceil((tglTanam.getTime() - tglSemai.getTime()) / (1000 * 3600 * 24));
             
-            let hstDasar = 5; // Sesuai instruksi: Pemupukan dasar = 5 HST
-            let hstSusulan2 = Math.round(umurPadi - selisihHari - 60); // Rumus: umur padi - umur persemaian - 60
-            let hstSusulan1 = Math.round(hstSusulan2 / 2); // Rumus: waktu pemupukan ke 2 dibagi 2
+            let hstDasar = 5; 
+            let hstSusulan2 = Math.round(umurPadi - selisihHari - 60); 
+            let hstSusulan1 = Math.round(hstSusulan2 / 2); 
 
-            // Pengaman logika tanggal input data abnormal
             if (hstSusulan1 <= hstDasar) hstSusulan1 = 21;
             if (hstSusulan2 <= hstSusulan1) hstSusulan2 = 35;
 
-            // Hitung Tanggal Kalender Riil Lapangan
             const formatTanggal = (hst) => {
                 let d = new Date(tglTanam);
                 d.setDate(d.getDate() + hst);
                 return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
             };
 
-            const tglRiilDasar = formatTanggal(hstDasar);
-            const tglRiilSusulan1 = formatTanggal(hstSusulan1);
-            const tglRiilSusulan2 = formatTanggal(hstSusulan2);
+            // 5. Logika Faktor Koreksi Efisiensi Pupuk Berbasis Densitas Populasi Rumpun
+            // Tegel 25x25 (160k rumpun) sebagai basis atas, Legowo 2:1 (66k rumpun dengan border effect tinggi) sebagai efisiensi optimal.
+            // Formula menyeimbangkan kebutuhan nutrisi per rumpun tanaman secara linier terhadap target hasil makro.
+            const rasioTarget = targetHasil / 10;
+            const faktorKepadatan = (rumpunPerHa / 100000) * 0.15 + 0.85; 
+            const totalFaktorMurni = rasioTarget * faktorKepadatan * luasHektar;
 
-            // 4. Hitung Rasio Kebutuhan Hara Berimbang Berdasarkan Target Hasil (Skala Linier Basis Data Komparasi 10 Ton)
-            const rasio = targetHasil / 10;
-
-            // Menyimpan seluruh paket data hasil kalkulasi dosis terkonversi luas lahan
+            // Simpan paket data terintegrasi
             dataHasilKalkulasi = {
                 waktu: {
-                    dasar: { hst: hstDasar, tgl: tglRiilDasar },
-                    susulan1: { hst: hstSusulan1, tgl: tglRiilSusulan1 },
-                    susulan2: { hst: hstSusulan2, tgl: tglRiilSusulan2 }
+                    dasar: { hst: hstDasar, tgl: formatTanggal(hstDasar) },
+                    susulan1: { hst: hstSusulan1, tgl: formatTanggal(hstSusulan1) },
+                    susulan2: { hst: hstSusulan2, tgl: formatTanggal(hstSusulan2) }
                 },
                 tunggal: {
-                    dasar: { organik: 2000 * rasio * luasHektar, sp36: 125 * rasio * luasHektar, urea: 100 * rasio * luasHektar, kcl: 80 * rasio * luasHektar },
-                    susulan1: { urea: 140 * rasio * luasHektar, kcl: 80 * rasio * luasHektar },
-                    susulan2: { urea: 110 * rasio * luasHektar, kcl: 115 * rasio * luasHektar }
+                    dasar: { organik: 2000 * rasioTarget * luasHektar, sp36: 125 * totalFaktorMurni, urea: 100 * totalFaktorMurni, kcl: 80 * totalFaktorMurni },
+                    susulan1: { urea: 140 * totalFaktorMurni, kcl: 80 * totalFaktorMurni },
+                    susulan2: { urea: 110 * totalFaktorMurni, kcl: 115 * totalFaktorMurni }
                 },
                 majemuk: {
-                    dasar: { organik: 2000 * rasio * luasHektar, npk: 140 * rasio * luasHektar, urea: 55 * rasio * luasHektar },
-                    susulan1: { npk: 160 * rasio * luasHektar, urea: 100 * rasio * luasHektar, kcl: 50 * rasio * luasHektar },
-                    susulan2: { npk: 100 * rasio * luasHektar, urea: 65 * rasio * luasHektar, kcl: 125 * rasio * luasHektar }
+                    dasar: { organik: 2000 * rasioTarget * luasHektar, npk: 140 * totalFaktorMurni, urea: 55 * totalFaktorMurni },
+                    susulan1: { npk: 160 * totalFaktorMurni, urea: 100 * totalFaktorMurni, kcl: 50 * totalFaktorMurni },
+                    susulan2: { npk: 100 * totalFaktorMurni, urea: 65 * totalFaktorMurni, kcl: 125 * totalFaktorMurni }
                 }
             };
 
@@ -183,7 +239,6 @@
             document.getElementById('placeholderHasil').classList.add('hidden');
             document.getElementById('kontenHasil').classList.remove('hidden');
 
-            // Render data tabel
             renderTabel();
         }
 
@@ -206,7 +261,7 @@
             if (!dataHasilKalkulasi) return;
 
             const tbody = document.getElementById('bodyTabelPupuk');
-            tbody.innerHTML = ""; // Bersihkan tabel lama
+            tbody.innerHTML = ""; 
 
             const waktu = dataHasilKalkulasi.waktu;
 
@@ -225,9 +280,9 @@
                             <div>• KCl: <span class="font-bold text-purple-700">${Math.round(d.dasar.kcl)} kg</span></div>
                         </td>
                         <td class="p-4 align-top space-y-1.5 text-xs md:text-sm">
-                            <p><b>Waktu Aplikasi:</b> Diaplikasikan pada <b>${waktu.dasar.hst} Hari Setelah Tanam (${waktu.dasar.hst} HST)</b> saat olah tanah akhir.</p>
-                            <p><b>Metode:</b> Tebar merata ke seluruh luasan lahan dalam kondisi air sawah <b>macak-macak</b>.</p>
-                            <p class="text-xs text-gray-500 italic">🎯 <b>Fokus:</b> Merangsang pertumbuhan sistem perakaran baru dan mempercepat pemulihan bibit pasca pindah tanam.</p>
+                            <p><b>Waktu Aplikasi:</b> Diaplikasikan pada <b>${waktu.dasar.hst} HST</b>.</p>
+                            <p><b>Metode:</b> Tebar merata seluruh Pupuk Organik + Makro saat air sawah kondisi <b>macak-macak</b>.</p>
+                            <p class="text-xs text-gray-500 italic">🎯 <b>Fokus:</b> Menyediakan nutrisi awal bagi rumpun muda untuk mempercepat pemulihan akar pasca pindah tanam.</p>
                         </td>
                     </tr>
                     <tr class="hover:bg-gray-50/80 transition">
@@ -241,8 +296,8 @@
                         </td>
                         <td class="p-4 align-top space-y-1.5 text-xs md:text-sm">
                             <p><b>Waktu Aplikasi:</b> Diaplikasikan tepat pada umur <b>${waktu.susulan1.hst} HST</b>.</p>
-                            <p><b>Metode:</b> Tabur secara presisi searah barisan zona perakaran tanaman (sangat ideal dikombinasikan dengan sistem tanam <b>Jajar Legowo</b>).</p>
-                            <p class="text-xs text-gray-500 italic">🎯 <b>Fokus:</b> Memicu pembentukan jumlah anakan produktif maksimum secara seragam.</p>
+                            <p><b>Metode:</b> Tabur merata diarahkan dekat pangkal rumpun padi. Jika menggunakan Legowo, sebar pada barisan dalam lorong.</p>
+                            <p class="text-xs text-gray-500 italic">🎯 <b>Fokus:</b> Memaksimalkan pembentukan jumlah anakan produktif per rumpun tanaman.</p>
                         </td>
                     </tr>
                     <tr class="hover:bg-gray-50/80 transition">
@@ -255,9 +310,9 @@
                             <div>• KCl: <span class="font-bold text-purple-700">${Math.round(d.susulan2.kcl)} kg</span></div>
                         </td>
                         <td class="p-4 align-top space-y-1.5 text-xs md:text-sm">
-                            <p><b>Waktu Aplikasi:</b> Diaplikasikan pada umur <b>${waktu.susulan2.hst} HST</b> (memasuki Fase Bunting/Primordia).</p>
-                            <p><b>Metode:</b> Masukkan pupuk saat pelepah batang mulai membulat, segera lakukan pengairan dangkal penyokong pelarutan hara.</p>
-                            <p class="text-xs text-gray-500 italic">🎯 <b>Fokus:</b> Menjamin pengisian bulir gabah bernas mulai dari pangkal hingga ujung malai, serta meminimalisir persentase gabah hampa.</p>
+                            <p><b>Waktu Aplikasi:</b> Diaplikasikan pada umur <b>${waktu.susulan2.hst} HST</b> (Fase Primordia / Bunting).</p>
+                            <p><b>Metode:</b> Masukkan hara saat pelepah batang membulat untuk pengisian malai yang optimal.</p>
+                            <p class="text-xs text-gray-500 italic">🎯 <b>Fokus:</b> Meningkatkan pengisian bulir gabah pada tiap rumpun agar padat berisi dan meminimalisir gabah hampa.</p>
                         </td>
                     </tr>
                 `;
@@ -275,9 +330,9 @@
                             <div>• Urea: <span class="font-bold text-amber-700">${Math.round(d.dasar.urea)} kg</span></div>
                         </td>
                         <td class="p-4 align-top space-y-1.5 text-xs md:text-sm">
-                            <p><b>Waktu Aplikasi:</b> Dimasukkan pada <b>${waktu.dasar.hst} HST</b> saat perataan tanah makac-macak.</p>
-                            <p><b>Metode:</b> Dicampur rata dengan lumpur sawah tergenang tipis agar unsur makro esensial mengikat kuat di tanah.</p>
-                            <p class="text-xs text-gray-500 italic">🎯 <b>Fokus:</b> Fondasi kecukupan hara majemuk yang seimbang dan merata untuk menunjang masa awal vegetatif tanaman.</p>
+                            <p><b>Waktu Aplikasi:</b> Ditabur pada <b>${waktu.dasar.hst} HST</b> saat kondisi macak-macak.</p>
+                            <p><b>Metode:</b> Satukan pupuk dengan lumpur atas permukaan lahan agar hara makro terikat dekat dengan zona akar awal.</p>
+                            <p class="text-xs text-gray-500 italic">🎯 <b>Fokus:</b> Menyediakan fondasi hara N, P, K berimbang bagi seluruh rumpun di masa awal vegetatif.</p>
                         </td>
                     </tr>
                     <tr class="hover:bg-gray-50/80 transition">
@@ -291,9 +346,9 @@
                             <div>• KCl: <span class="font-bold text-purple-700">${Math.round(d.susulan1.kcl)} kg</span></div>
                         </td>
                         <td class="p-4 align-top space-y-1.5 text-xs md:text-sm">
-                            <p><b>Waktu Aplikasi:</b> Diaplikasikan pada umur <b>${waktu.susulan1.hst} HST</b> (Fase Anakan Aktif).</p>
-                            <p><b>Metode:</b> Aplikasikan khusus pada jalur tengah/lorong kosong barisan sistem tanam **Jajar Legowo** saat tanah berlumpur basah.</p>
-                            <p class="text-xs text-gray-500 italic">🎯 <b>Fokus:</b> Menjaga pasokan nitrogen dan fosfat guna menstimulasi pertumbuhan rumpun anakan yang kokoh.</p>
+                            <p><b>Waktu Aplikasi:</b> Masukkan pada umur <b>${waktu.susulan1.hst} HST</b>.</p>
+                            <p><b>Metode:</b> Jika menggunakan model <b>Legowo 2:1</b>, tabur fokus di dalam lorong barisan tanaman guna menghemat tenaga kerja dan menaikkan efisiensi serapan.</p>
+                            <p class="text-xs text-gray-500 italic">🎯 <b>Fokus:</b> Memacu pembentukan anakan produktif yang kokoh dan berbatang kuat.</p>
                         </td>
                     </tr>
                     <tr class="hover:bg-gray-50/80 transition">
@@ -307,9 +362,9 @@
                             <div>• KCl: <span class="font-bold text-purple-700">${Math.round(d.susulan2.kcl)} kg</span></div>
                         </td>
                         <td class="p-4 align-top space-y-1.5 text-xs md:text-sm">
-                            <p><b>Waktu Aplikasi:</b> Diaplikasikan pada umur <b>${waktu.susulan2.hst} HST</b> (Fase Primordia / Bunting).</p>
-                            <p><b>Metode:</b> Tebar merata, lalu segera lakukan penggenangan air dangkal (3-5 cm) selama 3-4 hari berturut-turut demi asupan hara maksimal.</p>
-                            <p class="text-xs text-gray-500 italic">🎯 <b>Fokus:</b> Suplai hara Kalium konsentrasi tinggi untuk mendongkrak persentase rendemen buah giling serta bobot total gabah.</p>
+                            <p><b>Waktu Aplikasi:</b> Diaplikasikan pada umur <b>${waktu.susulan2.hst} HST</b> (Fase Primordia).</p>
+                            <p><b>Metode:</b> Tebar merata menjelang pengaliran air berkala berikutnya agar unsur Kalium tinggi terserap cepat.</p>
+                            <p class="text-xs text-gray-500 italic">🎯 <b>Fokus:</b> Meningkatkan bobot gabah per rumpun serta menaikkan kualitas rendemen hasil giling.</p>
                         </td>
                     </tr>
                 `;
