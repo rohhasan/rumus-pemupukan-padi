@@ -5,6 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aplikasi Rumus Pemupukan Tanaman Padi</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        /* Aturan CSS Khusus saat Cetak / Simpan PDF */
+        @media print {
+            /* Sembunyikan Header, Form Input, dan Tombol Cetak */
+            header, #kalkulatorForm, #btnCetakPDF {
+                display: none !important;
+            }
+            /* Atur agar area hasil mengambil lebar penuh halaman */
+            #areaHasilCetak {
+                width: 100% !important;
+                position: absolute;
+                top: 0;
+                left: 0;
+                margin: 0;
+                padding: 0;
+            }
+            body {
+                background-color: #ffffff;
+            }
+        }
+    </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans antialiased">
 
@@ -80,78 +101,80 @@
                 </div>
 
                 <div id="kontenHasil" class="hidden space-y-6">
-                    <div class="bg-emerald-800 text-white p-5 rounded-xl shadow-md grid grid-cols-1 md:grid-cols-3 gap-4 text-center md:text-left">
-                        <div>
-                            <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Profil Hasil Lapangan</span>
-                            <p class="text-lg font-bold" id="resNamaPetani">-</p>
-                            <span class="text-xs text-emerald-100" id="resAlamatPetani">-</span>
-                            <span class="text-xs text-emerald-200 block mt-1">Luas: <span id="resLuasHektar"></span> Ha (<span id="resLuasBata"></span> Bata)</span>
-                        </div>
-                        <div class="border-y md:border-y-0 md:border-x border-emerald-700/60 py-2 md:py-0 md:px-4">
-                            <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Model Jarak Tanam & Jadwal</span>
-                            <p class="text-lg font-bold text-yellow-300" id="resModelJarak">-</p>
-                            <span class="text-xs text-emerald-100 block font-medium">Waktu Tanam: <span id="resTglTanamOtomatis" class="text-white font-bold text-sm bg-emerald-900 px-2 py-0.5 rounded shadow-sm inline-block mt-0.5">-</span></span>
-                        </div>
-                        <div>
-                            <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Total Populasi Rumpun</span>
-                            <p class="text-2xl font-black text-white" id="resTotalRumpun">0</p>
-                            <span class="text-xs text-emerald-200 font-medium">Target: <span id="resTarget"></span> Ton/Ha</span>
-                        </div>
-                    </div>
-
-                    <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-5 shadow-sm">
-                        <h3 class="text-sm font-bold text-amber-900 uppercase tracking-wide flex items-center gap-1.5 mb-3">
-                            📦 Total Kebutuhan Pupuk Lahan Petani (1 Musim Tanam)
-                        </h3>
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-                            <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-xs">
-                                <span class="text-xs text-gray-500 block font-medium">Pupuk Organik</span>
-                                <p class="text-lg font-black text-emerald-700 mt-1"><span id="totOrganik">0</span> <span class="text-xs font-bold text-gray-600">Kg</span></p>
+                    
+                    <div id="areaHasilCetak" class="space-y-6">
+                        <div class="bg-emerald-800 text-white p-5 rounded-xl shadow-md grid grid-cols-1 md:grid-cols-3 gap-4 text-center md:text-left">
+                            <div>
+                                <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Profil Hasil Lapangan</span>
+                                <p class="text-lg font-bold" id="resNamaPetani">-</p>
+                                <span class="text-xs text-emerald-100" id="resAlamatPetani">-</span>
+                                <span class="text-xs text-emerald-200 block mt-1">Luas: <span id="resLuasHektar"></span> Ha (<span id="resLuasBata"></span> Bata)</span>
                             </div>
-                            <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-xs">
-                                <span class="text-xs text-gray-500 block font-medium">Urea (Nitrogen)</span>
-                                <p class="text-lg font-black text-amber-700 mt-1"><span id="totUrea">0</span> <span class="text-xs font-bold text-gray-600">Kg</span></p>
+                            <div class="border-y md:border-y-0 md:border-x border-emerald-700/60 py-2 md:py-0 md:px-4">
+                                <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Model Jarak Tanam & Jadwal</span>
+                                <p class="text-lg font-bold text-yellow-300" id="resModelJarak">-</p>
+                                <span class="text-xs text-emerald-100 block font-medium">Waktu Tanam: <span id="resTglTanamOtomatis" class="text-white font-bold text-sm bg-emerald-900 px-2 py-0.5 rounded shadow-sm inline-block mt-0.5">-</span></span>
                             </div>
-                            <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-xs">
-                                <span class="text-xs text-gray-500 block font-medium">NPK Phonska</span>
-                                <p class="text-lg font-black text-blue-700 mt-1"><span id="totNpk">0</span> <span class="text-xs font-bold text-gray-600">Kg</span></p>
-                            </div>
-                            <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-xs">
-                                <span class="text-xs text-gray-500 block font-medium">KCl (Kalium)</span>
-                                <p class="text-lg font-black text-purple-700 mt-1"><span id="totKcl">0</span> <span class="text-xs font-bold text-gray-600">Kg</span></p>
+                            <div>
+                                <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Total Populasi Rumpun</span>
+                                <p class="text-2xl font-black text-white" id="resTotalRumpun">0</p>
+                                <span class="text-xs text-emerald-200 font-medium">Target: <span id="resTarget"></span> Ton/Ha</span>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="bg-white px-5 py-3 rounded-xl shadow-sm border border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div class="font-bold text-gray-700 text-sm md:text-base flex flex-wrap items-center gap-2">
-                            <span>🔵</span> 
-                            <span>Rekomendasi Jalur: Pupuk Majemuk + Organik</span>
-                            <span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-md font-mono font-bold">
-                                📅 Tanam: <span id="resTglTanamJalur">-</span>
-                            </span>
+                        <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-5 shadow-sm">
+                            <h3 class="text-sm font-bold text-amber-900 uppercase tracking-wide flex items-center gap-1.5 mb-3">
+                                📦 Total Kebutuhan Pupuk Lahan Petani (1 Musim Tanam)
+                            </h3>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                                <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-xs">
+                                    <span class="text-xs text-gray-500 block font-medium">Pupuk Organik</span>
+                                    <p class="text-lg font-black text-emerald-700 mt-1"><span id="totOrganik">0</span> <span class="text-xs font-bold text-gray-600">Kg</span></p>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-xs">
+                                    <span class="text-xs text-gray-500 block font-medium">Urea (Nitrogen)</span>
+                                    <p class="text-lg font-black text-amber-700 mt-1"><span id="totUrea">0</span> <span class="text-xs font-bold text-gray-600">Kg</span></p>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-xs">
+                                    <span class="text-xs text-gray-500 block font-medium">NPK Phonska</span>
+                                    <p class="text-lg font-black text-blue-700 mt-1"><span id="totNpk">0</span> <span class="text-xs font-bold text-gray-600">Kg</span></p>
+                                </div>
+                                <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-xs">
+                                    <span class="text-xs text-gray-500 block font-medium">KCl (Kalium)</span>
+                                    <p class="text-lg font-black text-purple-700 mt-1"><span id="totKcl">0</span> <span class="text-xs font-bold text-gray-600">Kg</span></p>
+                                </div>
+                            </div>
                         </div>
-                        <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-1 rounded-full w-fit">Fokus Lapangan</span>
-                    </div>
 
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse text-sm">
-                                <thead>
-                                    <tr class="bg-slate-800 text-white font-semibold text-xs md:text-sm tracking-wider">
-                                        <th class="p-4 w-1/4 min-w-[150px] border-r border-slate-700">Tahap / Waktu Riil</th>
-                                        <th class="p-4 w-1/4 min-w-[160px] border-r border-slate-700">Dosis Pupuk Lapangan</th>
-                                        <th class="p-4 w-2/4 min-w-[240px]">Metode Aplikasi & Fokus</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="bodyTabelPupuk" class="divide-y divide-gray-200 text-gray-700">
-                                    </tbody>
-                            </table>
+                        <div class="bg-white px-5 py-3 rounded-xl shadow-sm border border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div class="font-bold text-gray-700 text-sm md:text-base flex flex-wrap items-center gap-2">
+                                <span>🔵</span> 
+                                <span>Rekomendasi Jalur: Pupuk Majemuk + Organik</span>
+                                <span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-md font-mono font-bold">
+                                    📅 Tanam: <span id="resTglTanamJalur">-</span>
+                                </span>
+                            </div>
+                            <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-1 rounded-full w-fit">Fokus Lapangan</span>
+                        </div>
+
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse text-sm">
+                                    <thead>
+                                        <tr class="bg-slate-800 text-white font-semibold text-xs md:text-sm tracking-wider">
+                                            <th class="p-4 w-1/4 min-w-[150px] border-r border-slate-700">Tahap / Waktu Riil</th>
+                                            <th class="p-4 w-1/4 min-w-[160px] border-r border-slate-700">Dosis Pupuk Lapangan</th>
+                                            <th class="p-4 w-2/4 min-w-[240px]">Metode Aplikasi & Fokus</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="bodyTabelPupuk" class="divide-y divide-gray-200 text-gray-700">
+                                        </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
-
-                    <button onclick="window.print()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer text-sm">
-                        📥 Download / Simpan ke File PDF / Cetak Halaman
+                    <button id="btnCetakPDF" onclick="window.print()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer text-sm">
+                        📥 Download / Simpan ke File PDF / Cetak Hasil Perhitungan
                     </button>
                 </div>
             </div>
@@ -213,7 +236,7 @@
             }
             let totalRumpunLahan = Math.round(rumpunPerHa * luasHektar);
 
-            // 5. Rumus Jadwal Waktu Pemupukan HST (Sesuai Aturan Baku Bapak)
+            // 5. Rumus Jadwal Waktu Pemupukan HST
             let hstDasar = 5; 
             let hstSusulan2 = Math.round(umurPadi - 15 - 60); 
             let hstSusulan1 = Math.round(hstSusulan2 / 2); 
@@ -258,7 +281,7 @@
             document.getElementById('resTglTanamOtomatis').innerText = tglTanamFormatMenu;
             document.getElementById('resTglTanamJalur').innerText = tglTanamFormatMenu;
 
-            // TAMPILKAN ANGKA TOTAL KE KOTAK RINGKASAN (Sudah Fix ID totKcl)
+            // TAMPILKAN ANGKA TOTAL KE KOTAK RINGKASAN
             document.getElementById('totOrganik').innerText = totalOrganikMusim.toLocaleString('id-ID');
             document.getElementById('totUrea').innerText = totalUreaMusim.toLocaleString('id-ID');
             document.getElementById('totNpk').innerText = totalNpkMusim.toLocaleString('id-ID');
