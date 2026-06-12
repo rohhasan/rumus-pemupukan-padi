@@ -136,7 +136,7 @@
 
     <script>
         // MASUKKAN URL GOOGLE APPS SCRIPT ANDA DI SINI
-        const SCRIPT_URL = "URL_APLIKASI_WEB_APPS_SCRIPT_ANDA";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzRXzPiEAd3CSktTHx4U1Bey3qQG9zZ2T_CejGE-8UYsWwnTqjfJD3KcYvWI5yJ0sZc/exec";
 
         function parseTanggalLokal(inputStr) {
             if (!inputStr) return null;
@@ -257,9 +257,9 @@
                 body: JSON.stringify(payload)
             })
             .then(() => {
-                alert("Data Berhasil Dihitung & Langsung Terkirim ke Google Spreadsheet!");
+                alert("Data Berhasil Dihitung!");
                 btn.disabled = false;
-                btn.innerHTML = "<span>🚀 Hitung & Kirim ke Spreadsheet</span>";
+                btn.innerHTML = "<span>🚀 Hitung </span>";
                 
                 // Reset Form Input Utama
                 document.getElementById('kalkulatorForm').reset();
@@ -268,7 +268,7 @@
                 alert("Gagal mengirim ke spreadsheet, cek koneksi internet atau URL script.");
                 console.error(err);
                 btn.disabled = false;
-                btn.innerHTML = "<span>🚀 Hitung & Kirim ke Spreadsheet</span>";
+                btn.innerHTML = "<span>🚀 Hitung </span>";
             });
         }
 
