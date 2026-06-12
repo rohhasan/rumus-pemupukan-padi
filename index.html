@@ -15,7 +15,7 @@
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <form id="kalkulatorForm" class="lg:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4 h-fit" onsubmit="hitungDanKirim(event)">
+            <form id="kalkulatorForm" class="lg:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4 h-fit">
                 <h2 class="text-lg font-semibold text-gray-700 border-b pb-2 border-gray-100">⚙️ Identitas & Lahan</h2>
                 
                 <div>
@@ -68,7 +68,7 @@
                     <input type="date" id="tglSemai" onchange="perbaruiTanggalTanamOtomatis()" required class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-green-500 focus:outline-none">
                 </div>
 
-                <button type="submit" id="btnSubmit" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium p-3 rounded-lg transition shadow-md cursor-pointer text-center text-sm flex items-center justify-center gap-2">
+                <button type="button" id="btnSubmit" onclick="hitungDanKirim()" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium p-3 rounded-lg transition shadow-md text-center text-sm flex items-center justify-center gap-2" style="cursor: pointer;">
                     <span>🚀 Hitung & Kirim ke Spreadsheet</span>
                 </button>
             </form>
@@ -134,14 +134,12 @@
         // MASUKKAN URL GOOGLE APPS SCRIPT ANDA DI SINI
         const SCRIPT_URL = "URL_APLIKASI_WEB_APPS_SCRIPT_ANDA";
 
-        // Fungsi pembantu untuk mengubah format string tanggal YYYY-MM-DD menjadi objek Tanggal yang valid
         function parseTanggalLokal(inputStr) {
             if (!inputStr) return null;
             const parts = inputStr.split('-');
             return new Date(parts[0], parts[1] - 1, parts[2]);
         }
 
-        // Fungsi pembantu untuk memformat objek Tanggal menjadi format Indonesia DD-MM-YYYY
         function formatTanggalIndo(dateObj) {
             const dd = String(dateObj.getDate()).padStart(2, '0');
             const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -149,22 +147,26 @@
             return `${dd}-${mm}-${yyyy}`;
         }
 
-        // Fungsi REALTIME: Mengubah isi kotak rekomendasi hijau secara instan saat tanggal semai dipilih
         function perbaruiTanggalTanamOtomatis() {
             const tglSemaiInput = document.getElementById('tglSemai').value;
             const tglTanam = parseTanggalLokal(tglSemaiInput);
             
             if (tglTanam) {
-                tglTanam.setDate(tglTanam.getDate() + 15); // Tambah 15 hari otomatis
+                tglTanam.setDate(tglTanam.getDate() + 15);
                 document.getElementById('resTglTanamOtomatis').innerText = formatTanggalIndo(tglTanam);
             } else {
                 document.getElementById('resTglTanamOtomatis').innerText = "Belum Diisi";
             }
         }
 
-        function hitungDanKirim(event) {
-            event.preventDefault();
-            
+        function hitungDanKirim() {
+            // Validasi manual HTML5 Form
+            const form = document.getElementById('kalkulatorForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
             const btn = document.getElementById('btnSubmit');
             btn.disabled = true;
             btn.innerHTML = "⏳ Mengirim Data...";
@@ -179,11 +181,10 @@
             const targetHasil = parseFloat(document.getElementById('targetHasil').value);
             const tglSemaiInput = document.getElementById('tglSemai').value;
 
-            // 2. Hitung Tanggal Tanam Menggunakan Fungsi Lokal yang Akurat
+            // 2. Hitung Tanggal Tanam Otomatis (Semai + 15 Hari)
             const tglTanam = parseTanggalLokal(tglSemaiInput);
-            tglTanam.setDate(tglTanam.getDate() + 15); // Tanggal Semai + 15 Hari
+            tglTanam.setDate(tglTanam.getDate() + 15);
 
-            // Tempel format tanggal ke bagian rekomendasi atas
             const tglTanamFormatMenu = formatTanggalIndo(tglTanam);
             document.getElementById('resTglTanamOtomatis').innerText = tglTanamFormatMenu;
 
@@ -203,9 +204,8 @@
             }
             let totalRumpunLahan = Math.round(rumpunPerHa * luasHektar);
 
-            // 5. Perhitungan Hari Setelah Tanam (HST)
-            const selisihHari = 15; // Jeda sebar ke tanam dikunci 15 hari
-            
+            // 5. Perhitungan Waktu Pemupukan HST
+            const selisihHari = 15;
             let hstDasar = 5; 
             let hstSusulan2 = Math.round(umurPadi - selisihHari - 60); 
             let hstSusulan1 = Math.round(hstSusulan2 / 2); 
@@ -213,7 +213,6 @@
             if (hstSusulan1 <= hstDasar) hstSusulan1 = 21;
             if (hstSusulan2 <= hstSusulan1) hstSusulan2 = 35;
 
-            // Fungsi kalkulasi tanggal riil kalender berdasarkan penambahan HST
             const hitungTanggalRiil = (hst) => {
                 let d = new Date(tglTanam.getTime());
                 d.setDate(d.getDate() + hst);
@@ -235,7 +234,7 @@
                 susulan2: { npk: 100 * totalFaktorMurni, urea: 65 * totalFaktorMurni, kcl: 125 * totalFaktorMurni }
             };
 
-            // Tampilkan Hasil Ke Komponen Utama Layar Aplikasi
+            // Tampilkan Hasil Ke Layar
             document.getElementById('resNamaPetani').innerText = namaPetani;
             document.getElementById('resAlamatPetani').innerText = "Blok/Lokasi: " + alamatPetani;
             document.getElementById('resLuasHektar').innerText = luasHektar.toFixed(3);
@@ -250,7 +249,7 @@
             document.getElementById('placeholderHasil').classList.add('hidden');
             document.getElementById('kontenHasil').classList.remove('hidden');
 
-            // 7. PROSES KIRIM DATA SECARA REALTIME KE GOOGLE SPREADSHEET
+            // 7. PROSES KIRIM DATA KE GOOGLE SPREADSHEET
             const payload = {
                 nama: namaPetani,
                 alamat: alamatPetani,
@@ -275,6 +274,8 @@
                 alert("Data Berhasil Dihitung & Langsung Terkirim ke Google Spreadsheet!");
                 btn.disabled = false;
                 btn.innerHTML = "<span>🚀 Hitung & Kirim ke Spreadsheet</span>";
+                
+                // Reset Input Tertentu
                 document.getElementById('namaPetani').value = "";
                 document.getElementById('alamatPetani').value = "";
                 document.getElementById('tglSemai').value = "";
