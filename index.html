@@ -100,11 +100,15 @@
                         </div>
                     </div>
 
-                    <div class="bg-white px-5 py-3 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between">
-                        <span class="font-bold text-gray-700 text-sm md:text-base flex items-center gap-2">
-                            <span>🔵</span> Rekomendasi Jalur: Pupuk Majemuk + Organik
-                        </span>
-                        <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-1 rounded-full">Fokus Lapangan</span>
+                    <div class="bg-white px-5 py-3 rounded-xl shadow-sm border border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="font-bold text-gray-700 text-sm md:text-base flex flex-wrap items-center gap-2">
+                            <span>🔵</span> 
+                            <span>Rekomendasi Jalur: Pupuk Majemuk + Organik</span>
+                            <span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-md font-mono font-bold">
+                                📅 Tanam: <span id="resTglTanamJalur">-</span>
+                            </span>
+                        </div>
+                        <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-1 rounded-full w-fit">Fokus Lapangan</span>
                     </div>
 
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
@@ -154,9 +158,12 @@
             
             if (tglTanam) {
                 tglTanam.setDate(tglTanam.getDate() + 15);
-                document.getElementById('resTglTanamOtomatis').innerText = formatTanggalIndo(tglTanam);
+                const tglHasil = formatTanggalIndo(tglTanam);
+                document.getElementById('resTglTanamOtomatis').innerText = tglHasil;
+                document.getElementById('resTglTanamJalur').innerText = tglHasil; // Otomatis berubah realtime
             } else {
                 document.getElementById('resTglTanamOtomatis').innerText = "Belum Diisi";
+                document.getElementById('resTglTanamJalur').innerText = "-";
             }
         }
 
@@ -183,6 +190,7 @@
 
             const tglTanamFormatMenu = formatTanggalIndo(tglTanam);
             document.getElementById('resTglTanamOtomatis').innerText = tglTanamFormatMenu;
+            document.getElementById('resTglTanamJalur').innerText = tglTanamFormatMenu; // Sematkan di header jalur rekomendasi
 
             // 3. Hitung Konversi Luas Lahan
             let luasHektar = satuanLahan === 'hektar' ? luasInput : luasInput / 700;
@@ -276,6 +284,7 @@
                 document.getElementById('alamatPetani').value = "";
                 document.getElementById('tglSemai').value = "";
                 document.getElementById('resTglTanamOtomatis').innerText = "Belum Diisi";
+                document.getElementById('resTglTanamJalur').innerText = "-";
             })
             .catch(err => {
                 alert("Gagal mengirim ke spreadsheet, cek koneksi internet atau URL script.");
