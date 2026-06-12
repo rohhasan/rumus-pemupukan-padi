@@ -234,16 +234,16 @@
             const totalFaktorMurni = rasioTarget * faktorKepadatan * luasHektar;
 
             const d = {
-                dasar: { organik: 2000 * rasioTarget * luasHektar, npk: 50 * totalFaktorMurni, urea: 55 * totalFaktorMurni },
+                dasar: { organik: 2000 * rasioTarget * luasHektar, npk: 50 * totalFaktorMurni, urea: 55 * totalFaktorMurni, kcl: 0 },
                 susulan1: { npk: 100 * totalFaktorMurni, urea: 110 * totalFaktorMurni, kcl: 0 },
                 susulan2: { npk: 100 * totalFaktorMurni, urea: 110 * totalFaktorMurni, kcl: 50 * totalFaktorMurni }
             };
 
-            // AKUMULASI TOTAL SELURUH DOSIS PUPUK DALAM 1 MUSIM
+            // PERBAIKAN: AKUMULASI TOTAL SELURUH DOSIS PUPUK DALAM 1 MUSIM TANAM
             const totalOrganikMusim = Math.round(d.dasar.organik);
             const totalUreaMusim = Math.round(d.dasar.urea + d.susulan1.urea + d.susulan2.urea);
             const totalNpkMusim = Math.round(d.dasar.npk + d.susulan1.npk + d.susulan2.npk);
-            const totalKclMusim = Math.round(d.dasar.kcl + d.susulan1.kcl + d.susulan2.kcl);
+            const totalKclMusim = Math.round(d.dasar.kcl + d.susulan1.kcl + d.susulan2.kcl); // Mengambil nilai dasar, susulan 1, dan susulan 2 secara benar
 
             // TAMPILKAN RINGKASAN PROFIL & LAHAN
             document.getElementById('resNamaPetani').innerText = namaPetani;
@@ -258,7 +258,7 @@
             document.getElementById('resTglTanamOtomatis').innerText = tglTanamFormatMenu;
             document.getElementById('resTglTanamJalur').innerText = tglTanamFormatMenu;
 
-            // TAMPILKAN ANGKA TOTAL KE KOTAK RINGKASAN BARU
+            // TAMPILKAN ANGKA TOTAL KE KOTAK RINGKASAN
             document.getElementById('totOrganik').innerText = totalOrganikMusim.toLocaleString('id-ID');
             document.getElementById('totUrea').innerText = totalUreaMusim.toLocaleString('id-ID');
             document.getElementById('totNpk').innerText = totalNpkMusim.toLocaleString('id-ID');
@@ -281,7 +281,6 @@
                 jarak: keteranganJarak,
                 target: targetHasil,
                 totalRumpun: totalRumpunLahan,
-                // Kolom tambahan untuk total rekap di spreadsheet
                 totalMusim: `Total 1 Musim -> Organik: ${totalOrganikMusim}kg, Urea: ${totalUreaMusim}kg, NPK: ${totalNpkMusim}kg, KCl: ${totalKclMusim}kg`,
                 pupukDasar: `Organik: ${Math.round(d.dasar.organik)}kg, NPK Phonska: ${Math.round(d.dasar.npk)}kg, Urea: ${Math.round(d.dasar.urea)}kg (${tglRiilDasar})`,
                 pupukSusulan1: `NPK Phonska: ${Math.round(d.susulan1.npk)}kg, Urea: ${Math.round(d.susulan1.urea)}kg (${tglRiilSusulan1})`,
