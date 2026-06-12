@@ -6,7 +6,7 @@
     <title>Aplikasi Rumus Pemupukan Tanaman Padi</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans antialiased" onload="muatRiwayat()">
+<body class="bg-gray-50 text-gray-800 font-sans antialiased">
 
     <div class="max-w-5xl mx-auto p-4 md:p-8">
         <header class="text-center mb-8 bg-green-700 text-white p-6 rounded-2xl shadow-md">
@@ -15,7 +15,7 @@
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <form id="kalkulatorForm" class="lg:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4 h-fit" onsubmit="hitungKalkulasi(event)">
+            <form id="kalkulatorForm" class="lg:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4 h-fit" onsubmit="hitungDanKirim(event)">
                 <h2 class="text-lg font-semibold text-gray-700 border-b pb-2 border-gray-100">⚙️ Identitas & Lahan</h2>
                 
                 <div>
@@ -74,21 +74,21 @@
                     </div>
                 </div>
 
-                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium p-3 rounded-lg transition shadow-md cursor-pointer text-center text-sm">
-                    💾 Hitung & Simpan Data
+                <button type="submit" id="btnSubmit" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium p-3 rounded-lg transition shadow-md cursor-pointer text-center text-sm flex items-center justify-center gap-2">
+                    <span>🚀 Hitung & Kirim ke Spreadsheet</span>
                 </button>
             </form>
 
             <div class="lg:col-span-8 space-y-6">
                 <div id="placeholderHasil" class="bg-white p-12 rounded-2xl shadow-sm border border-gray-200 text-center text-gray-400">
                     <p class="text-6xl mb-4">🌾</p>
-                    <p class="text-base font-medium">Silakan isi data lahan di samping, kemudian klik tombol <b>Hitung & Simpan Data</b> untuk memunculkan tabel rekomendasi pemupukan majemuk.</p>
+                    <p class="text-base font-medium">Silakan isi data lahan di samping, kemudian klik tombol untuk memproses perhitungan rumus lapangan.</p>
                 </div>
 
                 <div id="kontenHasil" class="hidden space-y-6">
                     <div class="bg-emerald-800 text-white p-5 rounded-xl shadow-md grid grid-cols-1 md:grid-cols-3 gap-4 text-center md:text-left">
                         <div>
-                            <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Profil Petani & Lahan</span>
+                            <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Profil Hasil Lapangan</span>
                             <p class="text-lg font-bold" id="resNamaPetani">-</p>
                             <span class="text-xs text-emerald-100" id="resAlamatPetani">-</span>
                             <span class="text-xs text-emerald-200 block mt-1">Luas: <span id="resLuasHektar"></span> Ha (<span id="resLuasBata"></span> Bata)</span>
@@ -134,34 +134,18 @@
                 </div>
             </div>
         </div>
-
-        <div class="mt-12 bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <span>📋</span> Daftar Riwayat Rekomendasi Petani Tersimpan
-            </h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-sm">
-                    <thead>
-                        <tr class="bg-gray-100 text-gray-700 font-semibold text-xs uppercase tracking-wider border-b border-gray-200">
-                            <th class="p-3">Nama</th>
-                            <th class="p-3">Alamat / Blok</th>
-                            <th class="p-3">Jarak Tanam</th>
-                            <th class="p-3">Luas Lahan</th>
-                            <th class="p-3">Total Rumpun</th>
-                            <th class="p-3 text-center">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabelRiwayat" class="divide-y divide-gray-100 text-gray-600">
-                        </tbody>
-                </table>
-            </div>
-        </div>
-
     </div>
 
     <script>
-        function hitungKalkulasi(event) {
+        // MASUKKAN URL GOOGLE APPS SCRIPT ANDA DI SINI
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzRXzPiEAd3CSktTHx4U1Bey3qQG9zZ2T_CejGE-8UYsWwnTqjfJD3KcYvWI5yJ0sZc/exec";
+
+        function hitungDanKirim(event) {
             event.preventDefault();
+            
+            const btn = document.getElementById('btnSubmit');
+            btn.disabled = true;
+            btn.innerHTML = "⏳ Mengirim Data...";
 
             // 1. Ambil Parameter Input Identitas & Lahan
             const namaPetani = document.getElementById('namaPetani').value;
@@ -177,20 +161,17 @@
             // 2. Hitung Konversi Luas Lahan
             let luasHektar = satuanLahan === 'hektar' ? luasInput : luasInput / 700;
             let luasBata = satuanLahan === 'bata' ? luasInput : luasInput * 700;
-            let luasM2 = luasHektar * 10000;
 
             // 3. Logika Perhitungan Jumlah Rumpun
             let rumpunPerHa = 0;
             let keteranganJarak = "";
-
             switch (modelJarak) {
-                case 'legowo21': rumpunPerHa = 66666; keteranganJarak = "Legowo 2:1 (10x20x40 cm)"; break;
-                case 'tegel25': rumpunPerHa = 160000; keteranganJarak = "Tegel 25 x 25 cm"; break;
-                case 'tegel30': rumpunPerHa = 111111; keteranganJarak = "Tegel 30 x 30 cm"; break;
-                case 'tegel35': rumpunPerHa = 81632; keteranganJarak = "Tegel 35 x 35 cm"; break;
-                case 'tegel40': rumpunPerHa = 62500; keteranganJarak = "Tegel 40 x 40 cm"; break;
+                case 'legowo21': rumpunPerHa = 66666; keteranganJarak = "Legowo 2:1"; break;
+                case 'tegel25': rumpunPerHa = 160000; keteranganJarak = "Tegel 25x25"; break;
+                case 'tegel30': rumpunPerHa = 111111; keteranganJarak = "Tegel 30x30"; break;
+                case 'tegel35': rumpunPerHa = 81632; keteranganJarak = "Tegel 35x35"; break;
+                case 'tegel40': rumpunPerHa = 62500; keteranganJarak = "Tegel 40x40"; break;
             }
-
             let totalRumpunLahan = Math.round(rumpunPerHa * luasHektar);
 
             // 4. Perhitungan Waktu Pemupukan
@@ -226,7 +207,7 @@
                 susulan2: { npk: 100 * totalFaktorMurni, urea: 65 * totalFaktorMurni, kcl: 125 * totalFaktorMurni }
             };
 
-            // 6. Tampilkan Hasil Ke Komponen Utama
+            // Tampilkan Hasil Ke Komponen Utama Layar Aplikasi
             document.getElementById('resNamaPetani').innerText = namaPetani;
             document.getElementById('resAlamatPetani').innerText = "Blok/Lokasi: " + alamatPetani;
             document.getElementById('resLuasHektar').innerText = luasHektar.toFixed(3);
@@ -238,36 +219,44 @@
 
             renderTabelHasil(tglRiilDasar, tglRiilSusulan1, tglRiilSusulan2, hstDasar, hstSusulan1, hstSusulan2, d);
 
-            // 7. LOGIKA PENYIMPANAN KE LOCALSTORAGE
-            const dataPetaniBaru = {
-                id: new Date().getTime(),
-                nama: namaPetani,
-                alamat: alamatPetani,
-                umurPadi: umurPadi,
-                luasInput: luasInput,
-                satuanLahan: satuanLahan,
-                modelJarak: modelJarak,
-                targetHasil: targetHasil,
-                tglSemai: tglSemaiInput,
-                tglTanam: tglTanamInput,
-                totalRumpun: totalRumpunLahan
-            };
-
-            let daftarPetani = JSON.parse(localStorage.getItem('db_petani')) || [];
-            
-            const indexLama = daftarPetani.findIndex(p => p.nama.toLowerCase() === namaPetani.toLowerCase() && p.alamat.toLowerCase() === alamatPetani.toLowerCase());
-            if (indexLama !== -1) {
-                daftarPetani[indexLama] = dataPetaniBaru;
-            } else {
-                daftarPetani.unshift(dataPetaniBaru);
-            }
-
-            localStorage.setItem('db_petani', JSON.stringify(daftarPetani));
-            muatRiwayat();
-
-            // Munculkan layar hasil
             document.getElementById('placeholderHasil').classList.add('hidden');
             document.getElementById('kontenHasil').classList.remove('hidden');
+
+            // 6. PROSES KIRIM DATA SECARA REALTIME KE GOOGLE SPREADSHEET
+            const payload = {
+                nama: namaPetani,
+                alamat: alamatPetani,
+                varietas: umurPadi == 102.5 ? "Genjah" : "Normal",
+                luas: luasInput,
+                satuan: satuanLahan,
+                jarak: keteranganJarak,
+                target: targetHasil,
+                totalRumpun: totalRumpunLahan,
+                pupukDasar: `Organik: ${Math.round(d.dasar.organik)}kg, NPK: ${Math.round(d.dasar.npk)}kg, Urea: ${Math.round(d.dasar.urea)}kg (${tglRiilDasar})`,
+                pupukSusulan1: `NPK: ${Math.round(d.susulan1.npk)}kg, Urea: ${Math.round(d.susulan1.urea)}kg, KCl: ${Math.round(d.susulan1.kcl)}kg (${tglRiilSusulan1})`,
+                pupukSusulan2: `NPK: ${Math.round(d.susulan2.npk)}kg, Urea: ${Math.round(d.susulan2.urea)}kg, KCl: ${Math.round(d.susulan2.kcl)}kg (${tglRiilSusulan2})`
+            };
+
+            fetch(SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors", // Mode aman lintas domain untuk Apps Script web app
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            })
+            .then(() => {
+                alert("Data Berhasil Dihitung & Langsung Terkirim ke Google Spreadsheet!");
+                btn.disabled = false;
+                btn.innerHTML = "<span>🚀 Hitung & Kirim ke Spreadsheet</span>";
+                // Reset form nama & alamat untuk input berikutnya jika diperlukan
+                document.getElementById('namaPetani').value = "";
+                document.getElementById('alamatPetani').value = "";
+            })
+            .catch(err => {
+                alert("Gagal mengirim ke spreadsheet, cek koneksi internet atau URL script.");
+                console.error(err);
+                btn.disabled = false;
+                btn.innerHTML = "<span>🚀 Hitung & Kirim ke Spreadsheet</span>";
+            });
         }
 
         function renderTabelHasil(tglRiilDasar, tglRiilSusulan1, tglRiilSusulan2, hstDasar, hstSusulan1, hstSusulan2, d) {
@@ -283,9 +272,8 @@
                         <div>• NPK 15-15-15: <span class="font-bold text-blue-700">${Math.round(d.dasar.npk)} kg</span></div>
                         <div>• Urea: <span class="font-bold text-amber-700">${Math.round(d.dasar.urea)} kg</span></div>
                     </td>
-                    <td class="p-4 align-top space-y-1.5 text-xs md:text-sm">
-                        <p><b>Waktu Aplikasi:</b> Ditabur pada umur <b>${hstDasar} HST</b> saat kondisi air macak-macak.</p>
-                        <p><b>Metode:</b> Satukan pupuk dengan lumpur atas permukaan lahan agar hara makro terikat dekat dengan zona akar awal.</p>
+                    <td class="p-4 align-top text-xs md:text-sm">
+                        <p>Ditabur pada umur <b>${hstDasar} HST</b> saat kondisi air macak-macak.</p>
                     </td>
                 </tr>
                 <tr class="hover:bg-gray-50/80 transition">
@@ -298,9 +286,8 @@
                         <div>• Urea: <span class="font-bold text-amber-700">${Math.round(d.susulan1.urea)} kg</span></div>
                         <div>• KCl: <span class="font-bold text-purple-700">${Math.round(d.susulan1.kcl)} kg</span></div>
                     </td>
-                    <td class="p-4 align-top space-y-1.5 text-xs md:text-sm">
-                        <p><b>Waktu Aplikasi:</b> Masukkan tepat pada umur <b>${hstSusulan1} HST</b>.</p>
-                        <p><b>Metode:</b> Jika lapangan memakai model Jajar Legowo, sebar pupuk di jalur tanaman/lorong guna menaikkan indeks efisiensi serapan hara.</p>
+                    <td class="p-4 align-top text-xs md:text-sm">
+                        <p>Masukkan tepat pada umur <b>${hstSusulan1} HST</b>. Utamakan sebar di lorong barisan tanaman (jika Legowo).</p>
                     </td>
                 </tr>
                 <tr class="hover:bg-gray-50/80 transition">
@@ -313,76 +300,11 @@
                         <div>• Urea: <span class="font-bold text-amber-700">${Math.round(d.susulan2.urea)} kg</span></div>
                         <div>• KCl: <span class="font-bold text-purple-700">${Math.round(d.susulan2.kcl)} kg</span></div>
                     </td>
-                    <td class="p-4 align-top space-y-1.5 text-xs md:text-sm">
-                        <p><b>Waktu Aplikasi:</b> Diaplikasikan pada umur <b>${hstSusulan2} HST</b> (Fase Primordia / Bunting).</p>
-                        <p><b>Metode:</b> Tebar merata menjelang pengaliran air berkala berikutnya agar hara pengisi bulir terserap cepat.</p>
+                    <td class="p-4 align-top text-xs md:text-sm">
+                        <p>Diaplikasikan pada umur <b>${hstSusulan2} HST</b> (Fase Primordia / Bunting).</p>
                     </td>
                 </tr>
             `;
-        }
-
-        function muatRiwayat() {
-            const tbodyRiwayat = document.getElementById('tabelRiwayat');
-            let daftarPetani = JSON.parse(localStorage.getItem('db_petani')) || [];
-
-            if (daftarPetani.length === 0) {
-                tbodyRiwayat.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400 italic">Belum ada data petani yang tersimpan di perangkat ini.</td></tr>`;
-                return;
-            }
-
-            tbodyRiwayat.innerHTML = "";
-            daftarPetani.forEach((petani) => {
-                let txtJarak = "";
-                if(petani.modelJarak === 'legowo21') txtJarak = "Legowo 2:1";
-                else txtJarak = "Tegel " + petani.modelJarak.replace('tegel','');
-
-                tbodyRiwayat.innerHTML += `
-                    <tr class="hover:bg-gray-50 transition text-xs md:text-sm">
-                        <td class="p-3 font-semibold text-gray-900">${petani.nama}</td>
-                        <td class="p-3">${petani.alamat}</td>
-                        <td class="p-3 text-gray-500">${txtJarak}</td>
-                        <td class="p-3 font-mono">${petani.luasInput} ${petani.satuanLahan}</td>
-                        <td class="p-3 text-emerald-700 font-medium">${petani.totalRumpun.toLocaleString('id-ID')}</td>
-                        <td class="p-3 text-center space-x-2">
-                            <button onclick="bukaDataPetani(${petani.id})" class="bg-blue-100 hover:bg-blue-200 text-blue-700 font-medium px-2.5 py-1 rounded transition text-xs cursor-pointer">
-                                🔍 Cek Rumus
-                            </button>
-                            <button onclick="hapusDataPetani(${petani.id})" class="bg-red-100 hover:bg-red-200 text-red-700 font-medium px-2.5 py-1 rounded transition text-xs cursor-pointer">
-                                🗑️ Hapus
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        function bukaDataPetani(id) {
-            let daftarPetani = JSON.parse(localStorage.getItem('db_petani')) || [];
-            const p = daftarPetani.find(petani => petani.id === id);
-
-            if (p) {
-                document.getElementById('namaPetani').value = p.nama;
-                document.getElementById('alamatPetani').value = p.alamat;
-                document.getElementById('varietas').value = p.umurPadi;
-                document.getElementById('luasLahan').value = p.luasInput;
-                document.getElementById('satuanLahan').value = p.satuanLahan;
-                document.getElementById('jarakTanam').value = p.modelJarak;
-                document.getElementById('targetHasil').value = p.targetHasil;
-                document.getElementById('tglSemai').value = p.tglSemai;
-                document.getElementById('tglTanam').value = p.tglTanam;
-
-                document.getElementById('kalkulatorForm').dispatchEvent(new Event('submit'));
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        }
-
-        function hapusDataPetani(id) {
-            if (confirm("Apakah Anda yakin ingin menghapus data ini dari riwayat perangkat?")) {
-                let daftarPetani = JSON.parse(localStorage.getItem('db_petani')) || [];
-                daftarPetani = daftarPetani.filter(petani => petani.id !== id);
-                localStorage.setItem('db_petani', JSON.stringify(daftarPetani));
-                muatRiwayat();
-            }
         }
     </script>
 </body>
