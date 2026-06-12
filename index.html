@@ -90,7 +90,7 @@
                         <div class="border-y md:border-y-0 md:border-x border-emerald-700/60 py-2 md:py-0 md:px-4">
                             <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Model Jarak Tanam & Jadwal</span>
                             <p class="text-lg font-bold text-yellow-300" id="resModelJarak">-</p>
-                            <span class="text-xs text-emerald-100 block font-medium">Otomatis Tanam (HSS+15): <span id="resTglTanamOtomatis" class="text-white font-bold text-sm bg-emerald-900 px-2 py-0.5 rounded shadow-sm inline-block mt-0.5">Belum Diisi</span></span>
+                            <span class="text-xs text-emerald-100 block font-medium">Waktu Tanam: <span id="resTglTanamOtomatis" class="text-white font-bold text-sm bg-emerald-900 px-2 py-0.5 rounded shadow-sm inline-block mt-0.5">Belum Diisi</span></span>
                             <span id="resRumpunPerHa" class="hidden"></span>
                         </div>
                         <div>
@@ -160,7 +160,7 @@
                 tglTanam.setDate(tglTanam.getDate() + 15);
                 const tglHasil = formatTanggalIndo(tglTanam);
                 document.getElementById('resTglTanamOtomatis').innerText = tglHasil;
-                document.getElementById('resTglTanamJalur').innerText = tglHasil; // Otomatis berubah realtime
+                document.getElementById('resTglTanamJalur').innerText = tglHasil; 
             } else {
                 document.getElementById('resTglTanamOtomatis').innerText = "Belum Diisi";
                 document.getElementById('resTglTanamJalur').innerText = "-";
@@ -190,7 +190,7 @@
 
             const tglTanamFormatMenu = formatTanggalIndo(tglTanam);
             document.getElementById('resTglTanamOtomatis').innerText = tglTanamFormatMenu;
-            document.getElementById('resTglTanamJalur').innerText = tglTanamFormatMenu; // Sematkan di header jalur rekomendasi
+            document.getElementById('resTglTanamJalur').innerText = tglTanamFormatMenu; 
 
             // 3. Hitung Konversi Luas Lahan
             let luasHektar = satuanLahan === 'hektar' ? luasInput : luasInput / 700;
@@ -210,11 +210,11 @@
 
             // 5. Perhitungan Waktu Pemupukan HST
             const selisihHari = 15;
-            let hstDasar = 5; 
+            let hstDasar = 6; // Disesuaikan menjadi 6 HST mengikuti dokumen lapangan terbaru Bapak
             let hstSusulan2 = Math.round(umurPadi - selisihHari - 60); 
             let hstSusulan1 = Math.round(hstSusulan2 / 2); 
 
-            if (hstSusulan1 <= hstDasar) hstSusulan1 = 21;
+            if (hstSusulan1 <= hstDasar) hstSusulan1 = 18; // Disesuaikan menjadi 18 HST mengikuti data riil
             if (hstSusulan2 <= hstSusulan1) hstSusulan2 = 35;
 
             const hitungTanggalRiil = (hst) => {
@@ -233,9 +233,9 @@
             const totalFaktorMurni = rasioTarget * faktorKepadatan * luasHektar;
 
             const d = {
-                dasar: { organik: 2000 * rasioTarget * luasHektar, npk: 140 * totalFaktorMurni, urea: 55 * totalFaktorMurni },
-                susulan1: { npk: 160 * totalFaktorMurni, urea: 100 * totalFaktorMurni, kcl: 50 * totalFaktorMurni },
-                susulan2: { npk: 100 * totalFaktorMurni, urea: 65 * totalFaktorMurni, kcl: 125 * totalFaktorMurni }
+                dasar: { organik: 2000 * rasioTarget * luasHektar, npk: 50 * totalFaktorMurni, urea: 55 * totalFaktorMurni },
+                susulan1: { npk: 100 * totalFaktorMurni, urea: 110 * totalFaktorMurni, kcl: 0 },
+                susulan2: { npk: 100 * totalFaktorMurni, urea: 110 * totalFaktorMurni, kcl: 50 * totalFaktorMurni }
             };
 
             // Tampilkan Hasil Ke Layar
@@ -264,7 +264,7 @@
                 target: targetHasil,
                 totalRumpun: totalRumpunLahan,
                 pupukDasar: `Organik: ${Math.round(d.dasar.organik)}kg, NPK Phonska: ${Math.round(d.dasar.npk)}kg, Urea: ${Math.round(d.dasar.urea)}kg (${tglRiilDasar})`,
-                pupukSusulan1: `NPK Phonska: ${Math.round(d.susulan1.npk)}kg, Urea: ${Math.round(d.susulan1.urea)}kg, KCl: ${Math.round(d.susulan1.kcl)}kg (${tglRiilSusulan1})`,
+                pupukSusulan1: `NPK Phonska: ${Math.round(d.susulan1.npk)}kg, Urea: ${Math.round(d.susulan1.urea)}kg (${tglRiilSusulan1})`,
                 pupukSusulan2: `NPK Phonska: ${Math.round(d.susulan2.npk)}kg, Urea: ${Math.round(d.susulan2.urea)}kg, KCl: ${Math.round(d.susulan2.kcl)}kg (${tglRiilSusulan2})`
             };
 
@@ -280,9 +280,7 @@
                 btn.innerHTML = "<span>🚀 Hitung & Kirim ke Spreadsheet</span>";
                 
                 // Reset Input Lapangan
-                document.getElementById('namaPetani').value = "";
-                document.getElementById('alamatPetani').value = "";
-                document.getElementById('tglSemai').value = "";
+                document.getElementById('kalkulatorForm').reset();
                 document.getElementById('resTglTanamOtomatis').innerText = "Belum Diisi";
                 document.getElementById('resTglTanamJalur').innerText = "-";
             })
@@ -303,12 +301,12 @@
                         <div class="inline-block mt-2 bg-emerald-600 text-white font-mono text-xs font-bold px-2.5 py-1 rounded-md shadow-sm">🗓️ ${tglRiilDasar}</div>
                     </td>
                     <td class="p-4 border-r border-gray-100 font-medium space-y-1 text-gray-900">
-                        <div>• Organik: <span class="font-bold text-emerald-700">${Math.round(d.dasar.organik)} kg</span></div>
-                        <div>• NPK Phonska: <span class="font-bold text-blue-700">${Math.round(d.dasar.npk)} kg</span></div>
                         <div>• Urea: <span class="font-bold text-amber-700">${Math.round(d.dasar.urea)} kg</span></div>
+                        <div>• NPK Phonska: <span class="font-bold text-blue-700">${Math.round(d.dasar.npk)} kg</span></div>
+                        <div class="text-xs text-gray-500 font-normal mt-1">(Ditambah Organik: ${Math.round(d.dasar.organik)} kg)</div>
                     </td>
                     <td class="p-4 align-top text-xs md:text-sm">
-                        <p>Ditabur pada umur <b>${hstDasar} HST</b> saat kondisi air macak-macak.</p>
+                        <p>Diaplikasikan <b>${hstDasar} Hari Setelah Tanam (${hstDasar} HST)</b>. Sebar merata kondisi macak-macak.</p>
                     </td>
                 </tr>
                 <tr class="hover:bg-gray-50/80 transition">
@@ -317,12 +315,11 @@
                         <div class="inline-block mt-2 bg-blue-600 text-white font-mono text-xs font-bold px-2.5 py-1 rounded-md shadow-sm">🗓️ ${tglRiilSusulan1}</div>
                     </td>
                     <td class="p-4 border-r border-gray-100 font-medium space-y-1 text-gray-900">
-                        <div>• NPK Phonska: <span class="font-bold text-blue-700">${Math.round(d.susulan1.npk)} kg</span></div>
                         <div>• Urea: <span class="font-bold text-amber-700">${Math.round(d.susulan1.urea)} kg</span></div>
-                        <div>• KCl: <span class="font-bold text-purple-700">${Math.round(d.susulan1.kcl)} kg</span></div>
+                        <div>• NPK Phonska: <span class="font-bold text-blue-700">${Math.round(d.susulan1.npk)} kg</span></div>
                     </td>
                     <td class="p-4 align-top text-xs md:text-sm">
-                        <p>Masukkan tepat pada umur <b>${hstSusulan1} HST</b>. Utamakan sebar di lorong barisan tanaman (jika Legowo).</p>
+                        <p>Diaplikasikan pada <b>${hstSusulan1} HST</b>. Tabur searah barisan tanaman (Legowo).</p>
                     </td>
                 </tr>
                 <tr class="hover:bg-gray-50/80 transition">
@@ -331,12 +328,12 @@
                         <div class="inline-block mt-2 bg-amber-500 text-white font-mono text-xs font-bold px-2.5 py-1 rounded-md shadow-sm">🗓️ ${tglRiilSusulan2}</div>
                     </td>
                     <td class="p-4 border-r border-gray-100 font-medium space-y-1 text-gray-900">
-                        <div>• NPK Phonska: <span class="font-bold text-blue-700">${Math.round(d.susulan2.npk)} kg</span></div>
                         <div>• Urea: <span class="font-bold text-amber-700">${Math.round(d.susulan2.urea)} kg</span></div>
+                        <div>• NPK Phonska: <span class="font-bold text-blue-700">${Math.round(d.susulan2.npk)} kg</span></div>
                         <div>• KCl: <span class="font-bold text-purple-700">${Math.round(d.susulan2.kcl)} kg</span></div>
                     </td>
                     <td class="p-4 align-top text-xs md:text-sm">
-                        <p>Diaplikasikan pada umur <b>${hstSusulan2} HST</b> (Fase Primordia / Bunting).</p>
+                        <p>Diaplikasikan pada <b>${hstSusulan2} HST</b> (Fase Bunting/Primordia).</p>
                     </td>
                 </tr>
             `;
