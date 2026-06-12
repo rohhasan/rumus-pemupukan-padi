@@ -31,8 +31,8 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-600 mb-1">Varietas Padi</label>
                     <select id="varietas" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:outline-none text-sm">
-                        <option value="102.5">Varietas Genjah (100 - 105 HSS)</option>
-                        <option value="118.5" selected>Varietas Normal (115 - 122 HSS)</option>
+                        <option value="100">Varietas Genjah (100 Hari)</option>
+                        <option value="115" selected>Varietas Normal (115 Hari)</option>
                     </select>
                 </div>
 
@@ -64,12 +64,12 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-600 mb-1">Tanggal Semai</label>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Tanggal Sebar Semai</label>
                     <input type="date" id="tglSemai" required class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-green-500 focus:outline-none">
                 </div>
 
                 <button type="submit" id="btnSubmit" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium p-3 rounded-lg transition shadow-md text-center text-sm flex items-center justify-center gap-2" style="cursor: pointer;">
-                    <span>🚀 Hitung </span>
+                    <span>🚀 Hitung & Kirim ke Spreadsheet</span>
                 </button>
             </form>
 
@@ -136,7 +136,7 @@
 
     <script>
         // MASUKKAN URL GOOGLE APPS SCRIPT ANDA DI SINI
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzRXzPiEAd3CSktTHx4U1Bey3qQG9zZ2T_CejGE-8UYsWwnTqjfJD3KcYvWI5yJ0sZc/exec";
+        const SCRIPT_URL = "URL_APLIKASI_WEB_APPS_SCRIPT_ANDA";
 
         function parseTanggalLokal(inputStr) {
             if (!inputStr) return null;
@@ -168,7 +168,7 @@
             const targetHasil = parseFloat(document.getElementById('targetHasil').value);
             const tglSemaiInput = document.getElementById('tglSemai').value;
 
-            // 2. Hitung Tanggal Tanam Otomatis (Semai + 15 Hari) TEPAT SAAT KLIK SUBMIT
+            // 2. Hitung Tanggal Tanam Otomatis (Semai + 15 Hari)
             const tglTanam = parseTanggalLokal(tglSemaiInput);
             tglTanam.setDate(tglTanam.getDate() + 15);
             const tglTanamFormatMenu = formatTanggalIndo(tglTanam);
@@ -189,14 +189,10 @@
             }
             let totalRumpunLahan = Math.round(rumpunPerHa * luasHektar);
 
-            // 5. Perhitungan Waktu Pemupukan HST
-            const selisihHari = 15;
-            let hstDasar = 6; 
-            let hstSusulan2 = Math.round(umurPadi - selisihHari - 60); 
-            let hstSusulan1 = Math.round(hstSusulan2 / 2); 
-
-            if (hstSusulan1 <= hstDasar) hstSusulan1 = 18; 
-            if (hstSusulan2 <= hstSusulan1) hstSusulan2 = 35;
+            // 5. PENYESUAIAN LOGIKA RUMUS PEMUPUKAN BARU (SESUAI INSTRUKSI)
+            let hstDasar = 5; // Rumus: Waktu Tanam + 5 Hari
+            let hstSusulan2 = Math.round(umurPadi - 15 - 60); // Rumus: Umur Varietas - 15 - 60
+            let hstSusulan1 = Math.round(hstSusulan2 / 2); // Rumus: (Umur Varietas - 15 - 60) / 2
 
             const hitungTanggalRiil = (hst) => {
                 let d = new Date(tglTanam.getTime());
@@ -226,7 +222,7 @@
             document.getElementById('resLuasBata').innerText = Math.round(luasBata);
             document.getElementById('resModelJarak').innerText = keteranganJarak;
             
-            // Pengisian Tanggal Tanam di Dua Tempat Utama
+            // Pengisian Tanggal Tanam Hasil Kalkulasi Serentak
             document.getElementById('resTglTanamOtomatis').innerText = tglTanamFormatMenu;
             document.getElementById('resTglTanamJalur').innerText = tglTanamFormatMenu;
 
@@ -243,7 +239,7 @@
             const payload = {
                 nama: namaPetani,
                 alamat: alamatPetani,
-                varietas: umurPadi == 102.5 ? "Genjah" : "Normal",
+                varietas: umurPadi == 100 ? "Genjah" : "Normal",
                 luas: luasInput,
                 satuan: satuanLahan,
                 jarak: keteranganJarak,
@@ -290,7 +286,7 @@
                         <div class="text-xs text-gray-500 font-normal mt-1">(Ditambah Organik: ${Math.round(d.dasar.organik)} kg)</div>
                     </td>
                     <td class="p-4 align-top text-xs md:text-sm">
-                        <p>Diaplikasikan <b>${hstDasar} Hari Setelah Tanam (${hstDasar} HST)</b>. Sebar merata kondisi macak-macak.</p>
+                        <p>Diaplikasikan tepat pada <b>${hstDasar} Hari Setelah Tanam (${hstDasar} HST)</b>. Sebar merata kondisi macak-macak.</p>
                     </td>
                 </tr>
                 <tr class="hover:bg-gray-50/80 transition">
@@ -303,7 +299,7 @@
                         <div>• NPK Phonska: <span class="font-bold text-blue-700">${Math.round(d.susulan1.npk)} kg</span></div>
                     </td>
                     <td class="p-4 align-top text-xs md:text-sm">
-                        <p>Diaplikasikan pada <b>${hstSusulan1} HST</b>. Tabur searah barisan tanaman.</p>
+                        <p>Diaplikasikan tepat pada <b>${hstSusulan1} HST</b>. Tabur searah barisan tanaman.</p>
                     </td>
                 </tr>
                 <tr class="hover:bg-gray-50/80 transition">
@@ -317,7 +313,7 @@
                         <div>• KCl: <span class="font-bold text-purple-700">${Math.round(d.susulan2.kcl)} kg</span></div>
                     </td>
                     <td class="p-4 align-top text-xs md:text-sm">
-                        <p>Diaplikasikan pada <b>${hstSusulan2} HST</b> (Fase Bunting/Primordia).</p>
+                        <p>Diaplikasikan tepat pada <b>${hstSusulan2} HST</b> (Fase Bunting/Primordia).</p>
                     </td>
                 </tr>
             `;
