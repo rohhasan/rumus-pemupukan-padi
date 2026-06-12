@@ -91,7 +91,6 @@
                             <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Model Jarak Tanam & Jadwal</span>
                             <p class="text-lg font-bold text-yellow-300" id="resModelJarak">-</p>
                             <span class="text-xs text-emerald-100 block font-medium">Waktu Tanam: <span id="resTglTanamOtomatis" class="text-white font-bold text-sm bg-emerald-900 px-2 py-0.5 rounded shadow-sm inline-block mt-0.5">Belum Diisi</span></span>
-                            <span id="resRumpunPerHa" class="hidden"></span>
                         </div>
                         <div>
                             <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Total Populasi Rumpun</span>
@@ -159,11 +158,16 @@
             if (tglTanam) {
                 tglTanam.setDate(tglTanam.getDate() + 15);
                 const tglHasil = formatTanggalIndo(tglTanam);
-                document.getElementById('resTglTanamOtomatis').innerText = tglHasil;
-                document.getElementById('resTglTanamJalur').innerText = tglHasil; 
+                
+                // Pastikan elemen ini ada sebelum dimanipulasi teksnya
+                const elemOtomatis = document.getElementById('resTglTanamOtomatis');
+                const elemJalur = document.getElementById('resTglTanamJalur');
+                
+                if(elemOtomatis) elemOtomatis.innerText = tglHasil;
+                if(elemJalur) elemJalur.innerText = tglHasil; 
             } else {
-                document.getElementById('resTglTanamOtomatis').innerText = "Belum Diisi";
-                document.getElementById('resTglTanamJalur').innerText = "-";
+                if(document.getElementById('resTglTanamOtomatis')) document.getElementById('resTglTanamOtomatis').innerText = "Belum Diisi";
+                if(document.getElementById('resTglTanamJalur')) document.getElementById('resTglTanamJalur').innerText = "-";
             }
         }
 
@@ -210,11 +214,11 @@
 
             // 5. Perhitungan Waktu Pemupukan HST
             const selisihHari = 15;
-            let hstDasar = 6; // Disesuaikan menjadi 6 HST mengikuti dokumen lapangan terbaru Bapak
+            let hstDasar = 6; 
             let hstSusulan2 = Math.round(umurPadi - selisihHari - 60); 
             let hstSusulan1 = Math.round(hstSusulan2 / 2); 
 
-            if (hstSusulan1 <= hstDasar) hstSusulan1 = 18; // Disesuaikan menjadi 18 HST mengikuti data riil
+            if (hstSusulan1 <= hstDasar) hstSusulan1 = 18; 
             if (hstSusulan2 <= hstSusulan1) hstSusulan2 = 35;
 
             const hitungTanggalRiil = (hst) => {
@@ -244,7 +248,6 @@
             document.getElementById('resLuasHektar').innerText = luasHektar.toFixed(3);
             document.getElementById('resLuasBata').innerText = Math.round(luasBata);
             document.getElementById('resModelJarak').innerText = keteranganJarak;
-            document.getElementById('resRumpunPerHa').innerText = rumpunPerHa.toLocaleString('id-ID');
             document.getElementById('resTotalRumpun').innerText = totalRumpunLahan.toLocaleString('id-ID') + " Rumpun";
             document.getElementById('resTarget').innerText = targetHasil;
 
@@ -279,7 +282,7 @@
                 btn.disabled = false;
                 btn.innerHTML = "<span>🚀 Hitung & Kirim ke Spreadsheet</span>";
                 
-                // Reset Input Lapangan
+                // Reset Form Input
                 document.getElementById('kalkulatorForm').reset();
                 document.getElementById('resTglTanamOtomatis').innerText = "Belum Diisi";
                 document.getElementById('resTglTanamJalur').innerText = "-";
