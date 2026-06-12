@@ -63,15 +63,9 @@
                     <input type="number" id="targetHasil" min="4" max="12" step="0.5" value="10" required class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:outline-none text-sm">
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-600 mb-1">Tanggal Semai</label>
-                        <input type="date" id="tglSemai" required class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-green-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-600 mb-1">Tanggal Tanam</label>
-                        <input type="date" id="tglTanam" required class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-green-500 focus:outline-none">
-                    </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Tanggal Sebar Semai</label>
+                    <input type="date" id="tglSemai" required class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-green-500 focus:outline-none">
                 </div>
 
                 <button type="submit" id="btnSubmit" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium p-3 rounded-lg transition shadow-md cursor-pointer text-center text-sm flex items-center justify-center gap-2">
@@ -94,9 +88,9 @@
                             <span class="text-xs text-emerald-200 block mt-1">Luas: <span id="resLuasHektar"></span> Ha (<span id="resLuasBata"></span> Bata)</span>
                         </div>
                         <div class="border-y md:border-y-0 md:border-x border-emerald-700/60 py-2 md:py-0 md:px-4">
-                            <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Model Jarak Tanam</span>
+                            <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Model Jarak Tanam & Jadwal</span>
                             <p class="text-lg font-bold text-yellow-300" id="resModelJarak">-</p>
-                            <span class="text-xs text-emerald-100">Kepadatan: <span id="resRumpunPerHa"></span> rumpun/Ha</span>
+                            <span class="text-xs text-emerald-100 block font-medium">Otomatis Tanam (HSS+15): <span id="resTglTanamOtomatis" class="text-white font-bold"></span></span>
                         </div>
                         <div>
                             <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Total Populasi Rumpun</span>
@@ -138,7 +132,7 @@
 
     <script>
         // MASUKKAN URL GOOGLE APPS SCRIPT ANDA DI SINI
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzRXzPiEAd3CSktTHx4U1Bey3qQG9zZ2T_CejGE-8UYsWwnTqjfJD3KcYvWI5yJ0sZc/exec";
+        const SCRIPT_URL = "URL_APLIKASI_WEB_APPS_SCRIPT_ANDA";
 
         function hitungDanKirim(event) {
             event.preventDefault();
@@ -156,13 +150,21 @@
             const modelJarak = document.getElementById('jarakTanam').value;
             const targetHasil = parseFloat(document.getElementById('targetHasil').value);
             const tglSemaiInput = document.getElementById('tglSemai').value;
-            const tglTanamInput = document.getElementById('tglTanam').value;
 
-            // 2. Hitung Konversi Luas Lahan
+            // 2. Hitung Tanggal Tanam Otomatis (Tanggal Semai + 15 Hari)
+            const tglSemai = new Date(tglSemaiInput);
+            const tglTanam = new Date(tglSemaiInput);
+            tglTanam.setDate(tglTanam.getDate() + 15); // Otomatis HSS + 15 Hari
+
+            // Format Tanggal Tanam untuk dipajang di Menu Rekomendasi (Atas)
+            const tglTanamFormatMenu = tglTanam.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+            document.getElementById('resTglTanamOtomatis').innerText = tglTanamFormatMenu;
+
+            // 3. Hitung Konversi Luas Lahan
             let luasHektar = satuanLahan === 'hektar' ? luasInput : luasInput / 700;
             let luasBata = satuanLahan === 'bata' ? luasInput : luasInput * 700;
 
-            // 3. Logika Perhitungan Jumlah Rumpun
+            // 4. Logika Perhitungan Jumlah Rumpun
             let rumpunPerHa = 0;
             let keteranganJarak = "";
             switch (modelJarak) {
@@ -174,10 +176,8 @@
             }
             let totalRumpunLahan = Math.round(rumpunPerHa * luasHektar);
 
-            // 4. Perhitungan Waktu Pemupukan
-            const tglSemai = new Date(tglSemaiInput);
-            const tglTanam = new Date(tglTanamInput);
-            const selisihHari = Math.ceil((tglTanam.getTime() - tglSemai.getTime()) / (1000 * 3600 * 24));
+            // 5. Perhitungan Waktu Pemupukan (Selisih Hari Selalu Terkunci 15 Hari karena rumus baru)
+            const selisihHari = 15; 
             
             let hstDasar = 5; 
             let hstSusulan2 = Math.round(umurPadi - selisihHari - 60); 
@@ -196,7 +196,7 @@
             const tglRiilSusulan1 = formatTanggal(hstSusulan1);
             const tglRiilSusulan2 = formatTanggal(hstSusulan2);
 
-            // 5. Rumus Dosis Pupuk Majemuk
+            // 6. Rumus Dosis Pupuk Majemuk
             const rasioTarget = targetHasil / 10;
             const faktorKepadatan = (rumpunPerHa / 100000) * 0.15 + 0.85; 
             const totalFaktorMurni = rasioTarget * faktorKepadatan * luasHektar;
@@ -222,7 +222,7 @@
             document.getElementById('placeholderHasil').classList.add('hidden');
             document.getElementById('kontenHasil').classList.remove('hidden');
 
-            // 6. PROSES KIRIM DATA SECARA REALTIME KE GOOGLE SPREADSHEET
+            // 7. PROSES KIRIM DATA SECARA REALTIME KE GOOGLE SPREADSHEET
             const payload = {
                 nama: namaPetani,
                 alamat: alamatPetani,
@@ -232,14 +232,14 @@
                 jarak: keteranganJarak,
                 target: targetHasil,
                 totalRumpun: totalRumpunLahan,
-                pupukDasar: `Organik: ${Math.round(d.dasar.organik)}kg, NPK: ${Math.round(d.dasar.npk)}kg, Urea: ${Math.round(d.dasar.urea)}kg (${tglRiilDasar})`,
-                pupukSusulan1: `NPK: ${Math.round(d.susulan1.npk)}kg, Urea: ${Math.round(d.susulan1.urea)}kg, KCl: ${Math.round(d.susulan1.kcl)}kg (${tglRiilSusulan1})`,
-                pupukSusulan2: `NPK: ${Math.round(d.susulan2.npk)}kg, Urea: ${Math.round(d.susulan2.urea)}kg, KCl: ${Math.round(d.susulan2.kcl)}kg (${tglRiilSusulan2})`
+                pupukDasar: `Organik: ${Math.round(d.dasar.organik)}kg, NPK Phonska: ${Math.round(d.dasar.npk)}kg, Urea: ${Math.round(d.dasar.urea)}kg (${tglRiilDasar})`,
+                pupukSusulan1: `NPK Phonska: ${Math.round(d.susulan1.npk)}kg, Urea: ${Math.round(d.susulan1.urea)}kg, KCl: ${Math.round(d.susulan1.kcl)}kg (${tglRiilSusulan1})`,
+                pupukSusulan2: `NPK Phonska: ${Math.round(d.susulan2.npk)}kg, Urea: ${Math.round(d.susulan2.urea)}kg, KCl: ${Math.round(d.susulan2.kcl)}kg (${tglRiilSusulan2})`
             };
 
             fetch(SCRIPT_URL, {
                 method: "POST",
-                mode: "no-cors", // Mode aman lintas domain untuk Apps Script web app
+                mode: "no-cors",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
             })
@@ -247,7 +247,6 @@
                 alert("Data Berhasil Dihitung & Langsung Terkirim ke Google Spreadsheet!");
                 btn.disabled = false;
                 btn.innerHTML = "<span>🚀 Hitung & Kirim ke Spreadsheet</span>";
-                // Reset form nama & alamat untuk input berikutnya jika diperlukan
                 document.getElementById('namaPetani').value = "";
                 document.getElementById('alamatPetani').value = "";
             })
@@ -269,7 +268,7 @@
                     </td>
                     <td class="p-4 border-r border-gray-100 font-medium space-y-1 text-gray-900">
                         <div>• Organik: <span class="font-bold text-emerald-700">${Math.round(d.dasar.organik)} kg</span></div>
-                        <div>• NPK 15-15-15: <span class="font-bold text-blue-700">${Math.round(d.dasar.npk)} kg</span></div>
+                        <div>• NPK Phonska: <span class="font-bold text-blue-700">${Math.round(d.dasar.npk)} kg</span></div>
                         <div>• Urea: <span class="font-bold text-amber-700">${Math.round(d.dasar.urea)} kg</span></div>
                     </td>
                     <td class="p-4 align-top text-xs md:text-sm">
@@ -282,7 +281,7 @@
                         <div class="inline-block mt-2 bg-blue-600 text-white font-mono text-xs font-bold px-2.5 py-1 rounded-md shadow-sm">🗓️ ${tglRiilSusulan1}</div>
                     </td>
                     <td class="p-4 border-r border-gray-100 font-medium space-y-1 text-gray-900">
-                        <div>• NPK 15-15-15: <span class="font-bold text-blue-700">${Math.round(d.susulan1.npk)} kg</span></div>
+                        <div>• NPK Phonska: <span class="font-bold text-blue-700">${Math.round(d.susulan1.npk)} kg</span></div>
                         <div>• Urea: <span class="font-bold text-amber-700">${Math.round(d.susulan1.urea)} kg</span></div>
                         <div>• KCl: <span class="font-bold text-purple-700">${Math.round(d.susulan1.kcl)} kg</span></div>
                     </td>
@@ -296,7 +295,7 @@
                         <div class="inline-block mt-2 bg-amber-500 text-white font-mono text-xs font-bold px-2.5 py-1 rounded-md shadow-sm">🗓️ ${tglRiilSusulan2}</div>
                     </td>
                     <td class="p-4 border-r border-gray-100 font-medium space-y-1 text-gray-900">
-                        <div>• NPK 15-15-15: <span class="font-bold text-blue-700">${Math.round(d.susulan2.npk)} kg</span></div>
+                        <div>• NPK Phonska: <span class="font-bold text-blue-700">${Math.round(d.susulan2.npk)} kg</span></div>
                         <div>• Urea: <span class="font-bold text-amber-700">${Math.round(d.susulan2.urea)} kg</span></div>
                         <div>• KCl: <span class="font-bold text-purple-700">${Math.round(d.susulan2.kcl)} kg</span></div>
                     </td>
