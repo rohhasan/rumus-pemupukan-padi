@@ -6,24 +6,16 @@
     <title>Aplikasi Rumus Pemupukan Tanaman Padi</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
-        /* Aturan CSS Khusus saat Cetak / Simpan PDF */
+        /* CSS Tambahan untuk memastikan struktur tabel rapi saat diprint */
         @media print {
-            /* Sembunyikan Header, Form Input, dan Tombol Cetak */
-            header, #kalkulatorForm, #btnCetakPDF {
-                display: none !important;
-            }
-            /* Atur agar area hasil mengambil lebar penuh halaman */
-            #areaHasilCetak {
-                width: 100% !important;
-                position: absolute;
-                top: 0;
-                left: 0;
-                margin: 0;
-                padding: 0;
-            }
-            body {
-                background-color: #ffffff;
-            }
+            body { background-color: #ffffff; color: #000000; }
+            .bg-emerald-800 { background-color: #064e3b !important; color: #ffffff !important; }
+            .text-yellow-300 { color: #fde047 !important; }
+            .bg-gradient-to-r { background: #fef3c7 !important; border: 1px solid #f59e0b !important; }
+            .bg-emerald-600 { background-color: #059669 !important; color: #ffffff !important; }
+            .bg-blue-600 { background-color: #2563eb !important; color: #ffffff !important; }
+            .bg-amber-500 { background-color: #d97706 !important; color: #ffffff !important; }
+            .bg-slate-800 { background-color: #1e293b !important; color: #ffffff !important; }
         }
     </style>
 </head>
@@ -102,7 +94,7 @@
 
                 <div id="kontenHasil" class="hidden space-y-6">
                     
-                    <div id="areaHasilCetak" class="space-y-6">
+                    <div id="areaHasilCetak" class="space-y-6 bg-transparent">
                         <div class="bg-emerald-800 text-white p-5 rounded-xl shadow-md grid grid-cols-1 md:grid-cols-3 gap-4 text-center md:text-left">
                             <div>
                                 <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Profil Hasil Lapangan</span>
@@ -173,7 +165,8 @@
                             </div>
                         </div>
                     </div>
-                    <button id="btnCetakPDF" onclick="window.print()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer text-sm">
+
+                    <button onclick="cetakHasilSaja()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer text-sm">
                         📥 Download / Simpan ke File PDF / Cetak Hasil Perhitungan
                     </button>
                 </div>
@@ -198,6 +191,53 @@
             return `${dd}-${mm}-${yyyy}`;
         }
 
+        // FUNGSI UTAMA UNTUK MENCETAK HASIL HITUNGAN SAJA
+        function cetakHasilSaja() {
+            const kontenHasil = document.getElementById('areaHasilCetak').innerHTML;
+            
+            // Buka jendela baru khusus cetak
+            const jendelaCetak = window.open('', '_blank', 'width=900,height=700');
+            
+            jendelaCetak.document.write(`
+                <html>
+                <head>
+                    <title>Rekomendasi_Pemupukan_Petani</title>
+                    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"><\/script>
+                    <style>
+                        body { font-family: sans-serif; padding: 20px; background: #fff; color: #333; }
+                        @media print {
+                            body { padding: 0; }
+                            .bg-emerald-800 { background-color: #064e3b !important; color: #ffffff !important; }
+                            .text-yellow-300 { color: #fde047 !important; }
+                            .bg-gradient-to-r { background: #fef3c7 !important; border: 1px solid #f59e0b !important; }
+                            .bg-emerald-600 { background-color: #059669 !important; color: #ffffff !important; }
+                            .bg-blue-600 { background-color: #2563eb !important; color: #ffffff !important; }
+                            .bg-amber-500 { background-color: #d97706 !important; color: #ffffff !important; }
+                            .bg-slate-800 { background-color: #1e293b !important; color: #ffffff !important; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="max-w-4xl mx-auto space-y-6">
+                        <div class="text-center pb-4 border-b-2 border-gray-200">
+                            <h2 class="text-xl font-bold text-green-800 uppercase">Lembar Hasil Rekomendasi Pemupukan Padi</h2>
+                            <p class="text-xs text-gray-500">Dibuat Berdasarkan Perhitungan Aplikasi Presisi Lapangan</p>
+                        </div>
+                        ${kontenHasil}
+                    </div>
+                    <script>
+                        // Jalankan perintah print setelah konten termuat sempurna
+                        window.onload = function() {
+                            window.print();
+                            window.close();
+                        }
+                    <\/script>
+                </body>
+                </html>
+            `);
+            jendelaCetak.document.close();
+        }
+
         function hitungDanKirim(event) {
             event.preventDefault();
 
@@ -205,7 +245,7 @@
             btn.disabled = true;
             btn.innerHTML = "⏳ Mengirim Data...";
 
-            // 1. Ambil Parameter Input Identitas & Lahan
+            // Ambil Parameter Input Identitas & Lahan
             const namaPetani = document.getElementById('namaPetani').value;
             const alamatPetani = document.getElementById('alamatPetani').value;
             const umurPadi = parseFloat(document.getElementById('varietas').value);
@@ -215,16 +255,16 @@
             const targetHasil = parseFloat(document.getElementById('targetHasil').value);
             const tglSemaiInput = document.getElementById('tglSemai').value;
 
-            // 2. Hitung Tanggal Tanam Otomatis (Semai + 15 Hari)
+            // Hitung Tanggal Tanam Otomatis (Semai + 15 Hari)
             const tglTanam = parseTanggalLokal(tglSemaiInput);
             tglTanam.setDate(tglTanam.getDate() + 15);
             const tglTanamFormatMenu = formatTanggalIndo(tglTanam);
 
-            // 3. Hitung Konversi Luas Lahan
+            // Hitung Konversi Luas Lahan
             let luasHektar = satuanLahan === 'hektar' ? luasInput : luasInput / 700;
             let luasBata = satuanLahan === 'bata' ? luasInput : luasInput * 700;
 
-            // 4. Logika Perhitungan Jumlah Rumpun
+            // Logika Perhitungan Jumlah Rumpun
             let rumpunPerHa = 0;
             let keteranganJarak = "";
             switch (modelJarak) {
@@ -236,7 +276,7 @@
             }
             let totalRumpunLahan = Math.round(rumpunPerHa * luasHektar);
 
-            // 5. Rumus Jadwal Waktu Pemupukan HST
+            // Rumus Jadwal Waktu Pemupukan HST
             let hstDasar = 5; 
             let hstSusulan2 = Math.round(umurPadi - 15 - 60); 
             let hstSusulan1 = Math.round(hstSusulan2 / 2); 
@@ -251,7 +291,7 @@
             const tglRiilSusulan1 = hitungTanggalRiil(hstSusulan1);
             const tglRiilSusulan2 = hitungTanggalRiil(hstSusulan2);
 
-            // 6. Rumus Perhitungan Dosis Pupuk Per Tahap
+            // Rumus Perhitungan Dosis Pupuk Per Tahap
             const rasioTarget = targetHasil / 10;
             const faktorKepadatan = (rumpunPerHa / 100000) * 0.15 + 0.85; 
             const totalFaktorMurni = rasioTarget * faktorKepadatan * luasHektar;
@@ -294,7 +334,7 @@
             document.getElementById('placeholderHasil').classList.add('hidden');
             document.getElementById('kontenHasil').classList.remove('hidden');
 
-            // 7. PROSES KIRIM DATA LENGKAP KE GOOGLE SPREADSHEET
+            // PROSES KIRIM DATA LENGKAP KE GOOGLE SPREADSHEET
             const payload = {
                 nama: namaPetani,
                 alamat: alamatPetani,
