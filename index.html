@@ -65,7 +65,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-600 mb-1">Tanggal Sebar Semai</label>
-                    <input type="date" id="tglSemai" onchange="perbaruiTanggalTanamOtomatis()" required class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-green-500 focus:outline-none">
+                    <input type="date" id="tglSemai" required class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-green-500 focus:outline-none">
                 </div>
 
                 <button type="submit" id="btnSubmit" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium p-3 rounded-lg transition shadow-md text-center text-sm flex items-center justify-center gap-2" style="cursor: pointer;">
@@ -90,7 +90,7 @@
                         <div class="border-y md:border-y-0 md:border-x border-emerald-700/60 py-2 md:py-0 md:px-4">
                             <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Model Jarak Tanam & Jadwal</span>
                             <p class="text-lg font-bold text-yellow-300" id="resModelJarak">-</p>
-                            <span class="text-xs text-emerald-100 block font-medium">Waktu Tanam: <span id="resTglTanamOtomatis" class="text-white font-bold text-sm bg-emerald-900 px-2 py-0.5 rounded shadow-sm inline-block mt-0.5">Belum Diisi</span></span>
+                            <span class="text-xs text-emerald-100 block font-medium">Waktu Tanam: <span id="resTglTanamOtomatis" class="text-white font-bold text-sm bg-emerald-900 px-2 py-0.5 rounded shadow-sm inline-block mt-0.5">-</span></span>
                         </div>
                         <div>
                             <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Total Populasi Rumpun</span>
@@ -136,7 +136,7 @@
 
     <script>
         // MASUKKAN URL GOOGLE APPS SCRIPT ANDA DI SINI
-        const SCRIPT_URL = "URL_APLIKASI_WEB_APPS_SCRIPT_ANDA";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzRXzPiEAd3CSktTHx4U1Bey3qQG9zZ2T_CejGE-8UYsWwnTqjfJD3KcYvWI5yJ0sZc/exec";
 
         function parseTanggalLokal(inputStr) {
             if (!inputStr) return null;
@@ -149,26 +149,6 @@
             const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
             const yyyy = dateObj.getFullYear();
             return `${dd}-${mm}-${yyyy}`;
-        }
-
-        function perbaruiTanggalTanamOtomatis() {
-            const tglSemaiInput = document.getElementById('tglSemai').value;
-            const tglTanam = parseTanggalLokal(tglSemaiInput);
-            
-            if (tglTanam) {
-                tglTanam.setDate(tglTanam.getDate() + 15);
-                const tglHasil = formatTanggalIndo(tglTanam);
-                
-                // Pastikan elemen ini ada sebelum dimanipulasi teksnya
-                const elemOtomatis = document.getElementById('resTglTanamOtomatis');
-                const elemJalur = document.getElementById('resTglTanamJalur');
-                
-                if(elemOtomatis) elemOtomatis.innerText = tglHasil;
-                if(elemJalur) elemJalur.innerText = tglHasil; 
-            } else {
-                if(document.getElementById('resTglTanamOtomatis')) document.getElementById('resTglTanamOtomatis').innerText = "Belum Diisi";
-                if(document.getElementById('resTglTanamJalur')) document.getElementById('resTglTanamJalur').innerText = "-";
-            }
         }
 
         function hitungDanKirim(event) {
@@ -188,13 +168,10 @@
             const targetHasil = parseFloat(document.getElementById('targetHasil').value);
             const tglSemaiInput = document.getElementById('tglSemai').value;
 
-            // 2. Hitung Tanggal Tanam Otomatis (Semai + 15 Hari)
+            // 2. Hitung Tanggal Tanam Otomatis (Semai + 15 Hari) TEPAT SAAT KLIK SUBMIT
             const tglTanam = parseTanggalLokal(tglSemaiInput);
             tglTanam.setDate(tglTanam.getDate() + 15);
-
             const tglTanamFormatMenu = formatTanggalIndo(tglTanam);
-            document.getElementById('resTglTanamOtomatis').innerText = tglTanamFormatMenu;
-            document.getElementById('resTglTanamJalur').innerText = tglTanamFormatMenu; 
 
             // 3. Hitung Konversi Luas Lahan
             let luasHektar = satuanLahan === 'hektar' ? luasInput : luasInput / 700;
@@ -242,17 +219,23 @@
                 susulan2: { npk: 100 * totalFaktorMurni, urea: 110 * totalFaktorMurni, kcl: 50 * totalFaktorMurni }
             };
 
-            // Tampilkan Hasil Ke Layar
+            // ISI DATA KE ELEMEN HASIL SECARA SERENTAK
             document.getElementById('resNamaPetani').innerText = namaPetani;
             document.getElementById('resAlamatPetani').innerText = "Blok/Lokasi: " + alamatPetani;
             document.getElementById('resLuasHektar').innerText = luasHektar.toFixed(3);
             document.getElementById('resLuasBata').innerText = Math.round(luasBata);
             document.getElementById('resModelJarak').innerText = keteranganJarak;
+            
+            // Pengisian Tanggal Tanam di Dua Tempat Utama
+            document.getElementById('resTglTanamOtomatis').innerText = tglTanamFormatMenu;
+            document.getElementById('resTglTanamJalur').innerText = tglTanamFormatMenu;
+
             document.getElementById('resTotalRumpun').innerText = totalRumpunLahan.toLocaleString('id-ID') + " Rumpun";
             document.getElementById('resTarget').innerText = targetHasil;
 
             renderTabelHasil(tglRiilDasar, tglRiilSusulan1, tglRiilSusulan2, hstDasar, hstSusulan1, hstSusulan2, d);
 
+            // Munculkan Kotak Hasil
             document.getElementById('placeholderHasil').classList.add('hidden');
             document.getElementById('kontenHasil').classList.remove('hidden');
 
@@ -282,10 +265,8 @@
                 btn.disabled = false;
                 btn.innerHTML = "<span>🚀 Hitung & Kirim ke Spreadsheet</span>";
                 
-                // Reset Form Input
+                // Reset Form Input Utama
                 document.getElementById('kalkulatorForm').reset();
-                document.getElementById('resTglTanamOtomatis').innerText = "Belum Diisi";
-                document.getElementById('resTglTanamJalur').innerText = "-";
             })
             .catch(err => {
                 alert("Gagal mengirim ke spreadsheet, cek koneksi internet atau URL script.");
@@ -322,7 +303,7 @@
                         <div>• NPK Phonska: <span class="font-bold text-blue-700">${Math.round(d.susulan1.npk)} kg</span></div>
                     </td>
                     <td class="p-4 align-top text-xs md:text-sm">
-                        <p>Diaplikasikan pada <b>${hstSusulan1} HST</b>. Tabur searah barisan tanaman (Legowo).</p>
+                        <p>Diaplikasikan pada <b>${hstSusulan1} HST</b>. Tabur searah barisan tanaman.</p>
                     </td>
                 </tr>
                 <tr class="hover:bg-gray-50/80 transition">
