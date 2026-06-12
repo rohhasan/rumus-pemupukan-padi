@@ -72,7 +72,7 @@
             <div class="lg:col-span-8 space-y-6">
                 <div id="placeholderHasil" class="bg-white p-12 rounded-2xl shadow-sm border border-gray-200 text-center text-gray-400">
                     <p class="text-6xl mb-4">🌾</p>
-                    <p class="text-base font-medium">Silakan isi data lahan di samping, kemudian klik tombol <b>Hitung Rekomendasi</b> untuk memunculkan tabel rekomendasi beserta hitungan populasi rumpun.</p>
+                    <p class="text-base font-medium">Silakan isi data lahan di samping, kemudian klik tombol <b>Hitung Rekomendasi</b> untuk memunculkan tabel rekomendasi pemupukan majemuk.</p>
                 </div>
 
                 <div id="kontenHasil" class="hidden space-y-6">
@@ -94,13 +94,11 @@
                         </div>
                     </div>
 
-                    <div class="bg-white p-2 rounded-xl shadow-sm border border-gray-200 flex space-x-2">
-                        <button onclick="gantiTab('tunggal')" id="btnTabTunggal" class="w-1/2 py-2.5 px-4 rounded-lg font-medium text-sm transition cursor-pointer text-center bg-green-600 text-white shadow-sm">
-                            🟢 Pilihan 1: Pupuk Tunggal + Organik
-                        </button>
-                        <button onclick="gantiTab('majemuk')" id="btnTabMajemuk" class="w-1/2 py-2.5 px-4 rounded-lg font-medium text-sm transition cursor-pointer text-center bg-gray-100 text-gray-600 hover:bg-gray-200">
-                            🔵 Pilihan 2: Pupuk Majemuk + Organik
-                        </button>
+                    <div class="bg-white px-5 py-3 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between">
+                        <span class="font-bold text-gray-700 text-sm md:text-base flex items-center gap-2">
+                            <span>🔵</span> Rekomendasi Jalur: Pupuk Majemuk + Organik
+                        </span>
+                        <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-1 rounded-full">Fokus Lapangan</span>
                     </div>
 
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
@@ -128,9 +126,6 @@
     </div>
 
     <script>
-        let dataHasilKalkulasi = null;
-        let tabAktif = 'tunggal';
-
         function hitungKalkulasi(event) {
             event.preventDefault();
 
@@ -154,27 +149,22 @@
 
             switch (modelJarak) {
                 case 'legowo21':
-                    // Rumus Jalar Legowo 2:1 (10x20x40 cm): (10.000) / (((20+40)/2) * 10 / 10000) = 66.666
                     rumpunPerHa = 66666;
                     keteranganJarak = "Legowo 2:1 (10x20x40 cm)";
                     break;
                 case 'tegel25':
-                    // Tegel 25x25 cm: 10.000 / (0.25 * 0.25) = 160.000
                     rumpunPerHa = 160000;
                     keteranganJarak = "Tegel 25 x 25 cm";
                     break;
                 case 'tegel30':
-                    // Tegel 30x30 cm: 10.000 / (0.3 * 0.3) = 111.111
                     rumpunPerHa = 111111;
                     keteranganJarak = "Tegel 30 x 30 cm";
                     break;
                 case 'tegel35':
-                    // Tegel 35x35 cm: 10.000 / (0.35 * 0.35) = 81.632
                     rumpunPerHa = 81632;
                     keteranganJarak = "Tegel 35 x 35 cm";
                     break;
                 case 'tegel40':
-                    // Tegel 40x40 cm: 10.000 / (0.4 * 0.4) = 62.500
                     rumpunPerHa = 62500;
                     keteranganJarak = "Tegel 40 x 40 cm";
                     break;
@@ -209,166 +199,78 @@
                 return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
             };
 
-            // 5. Logika Faktor Koreksi Efisiensi Pupuk Berbasis Densitas Populasi Rumpun
-            // Tegel 25x25 (160k rumpun) sebagai basis atas, Legowo 2:1 (66k rumpun dengan border effect tinggi) sebagai efisiensi optimal.
-            // Formula menyeimbangkan kebutuhan nutrisi per rumpun tanaman secara linier terhadap target hasil makro.
+            const tglRiilDasar = formatTanggal(hstDasar);
+            const tglRiilSusulan1 = formatTanggal(hstSusulan1);
+            const tglRiilSusulan2 = formatTanggal(hstSusulan2);
+
+            // 5. Logika Perhitungan Dosis Pupuk Majemuk Berbasis Target Hasil & Densitas Populasi
             const rasioTarget = targetHasil / 10;
             const faktorKepadatan = (rumpunPerHa / 100000) * 0.15 + 0.85; 
             const totalFaktorMurni = rasioTarget * faktorKepadatan * luasHektar;
 
-            // Simpan paket data terintegrasi
-            dataHasilKalkulasi = {
-                waktu: {
-                    dasar: { hst: hstDasar, tgl: formatTanggal(hstDasar) },
-                    susulan1: { hst: hstSusulan1, tgl: formatTanggal(hstSusulan1) },
-                    susulan2: { hst: hstSusulan2, tgl: formatTanggal(hstSusulan2) }
-                },
-                tunggal: {
-                    dasar: { organik: 2000 * rasioTarget * luasHektar, sp36: 125 * totalFaktorMurni, urea: 100 * totalFaktorMurni, kcl: 80 * totalFaktorMurni },
-                    susulan1: { urea: 140 * totalFaktorMurni, kcl: 80 * totalFaktorMurni },
-                    susulan2: { urea: 110 * totalFaktorMurni, kcl: 115 * totalFaktorMurni }
-                },
-                majemuk: {
-                    dasar: { organik: 2000 * rasioTarget * luasHektar, npk: 140 * totalFaktorMurni, urea: 55 * totalFaktorMurni },
-                    susulan1: { npk: 160 * totalFaktorMurni, urea: 100 * totalFaktorMurni, kcl: 50 * totalFaktorMurni },
-                    susulan2: { npk: 100 * totalFaktorMurni, urea: 65 * totalFaktorMurni, kcl: 125 * totalFaktorMurni }
-                }
+            // Alokasi Dosis Majemuk per Tahapan
+            const d = {
+                dasar: { organik: 2000 * rasioTarget * luasHektar, npk: 140 * totalFaktorMurni, urea: 55 * totalFaktorMurni },
+                susulan1: { npk: 160 * totalFaktorMurni, urea: 100 * totalFaktorMurni, kcl: 50 * totalFaktorMurni },
+                susulan2: { npk: 100 * totalFaktorMurni, urea: 65 * totalFaktorMurni, kcl: 125 * totalFaktorMurni }
             };
 
-            // Buka kontainer visual
+            // 6. Render Hasil Langsung ke Tabel Majemuk
+            const tbody = document.getElementById('bodyTabelPupuk');
+            tbody.innerHTML = `
+                <tr class="hover:bg-gray-50/80 transition">
+                    <td class="p-4 border-r border-gray-100 align-top">
+                        <div class="font-bold text-gray-900 md:text-base">1. Pemupukan Dasar</div>
+                        <div class="inline-block mt-2 bg-emerald-600 text-white font-mono text-xs font-bold px-2.5 py-1 rounded-md shadow-sm">🗓️ ${tglRiilDasar}</div>
+                    </td>
+                    <td class="p-4 border-r border-gray-100 font-medium space-y-1 text-gray-900">
+                        <div>• Organik: <span class="font-bold text-emerald-700">${Math.round(d.dasar.organik)} kg</span></div>
+                        <div>• NPK 15-15-15: <span class="font-bold text-blue-700">${Math.round(d.dasar.npk)} kg</span></div>
+                        <div>• Urea: <span class="font-bold text-amber-700">${Math.round(d.dasar.urea)} kg</span></div>
+                    </td>
+                    <td class="p-4 align-top space-y-1.5 text-xs md:text-sm">
+                        <p><b>Waktu Aplikasi:</b> Ditabur pada umur <b>${hstDasar} HST</b> saat kondisi air macak-macak.</p>
+                        <p><b>Metode:</b> Satukan pupuk dengan lumpur atas permukaan lahan agar hara makro terikat dekat dengan zona akar awal.</p>
+                        <p class="text-xs text-gray-500 italic">🎯 <b>Fokus:</b> Menyediakan fondasi hara N, P, K berimbang bagi seluruh rumpun di masa awal vegetatif tanaman.</p>
+                    </td>
+                </tr>
+                <tr class="hover:bg-gray-50/80 transition">
+                    <td class="p-4 border-r border-gray-100 align-top">
+                        <div class="font-bold text-gray-900 md:text-base">2. Susulan Tahap I</div>
+                        <div class="inline-block mt-2 bg-blue-600 text-white font-mono text-xs font-bold px-2.5 py-1 rounded-md shadow-sm">🗓️ ${tglRiilSusulan1}</div>
+                    </td>
+                    <td class="p-4 border-r border-gray-100 font-medium space-y-1 text-gray-900">
+                        <div>• NPK 15-15-15: <span class="font-bold text-blue-700">${Math.round(d.susulan1.npk)} kg</span></div>
+                        <div>• Urea: <span class="font-bold text-amber-700">${Math.round(d.susulan1.urea)} kg</span></div>
+                        <div>• KCl: <span class="font-bold text-purple-700">${Math.round(d.susulan1.kcl)} kg</span></div>
+                    </td>
+                    <td class="p-4 align-top space-y-1.5 text-xs md:text-sm">
+                        <p><b>Waktu Aplikasi:</b> Masukkan tepat pada umur <b>${hstSusulan1} HST</b>.</p>
+                        <p><b>Metode:</b> Jika menggunakan model <b>Legowo 2:1</b>, tabur fokus di dalam lorong barisan tanaman guna menghemat tenaga kerja dan meningkatkan efisiensi serapan hara.</p>
+                        <p class="text-xs text-gray-500 italic">🎯 <b>Fokus:</b> Memacu pembentukan rumpun anakan produktif yang banyak, kokoh, dan berbatang kuat.</p>
+                    </td>
+                </tr>
+                <tr class="hover:bg-gray-50/80 transition">
+                    <td class="p-4 border-r border-gray-100 align-top">
+                        <div class="font-bold text-gray-900 md:text-base">3. Susulan Tahap II</div>
+                        <div class="inline-block mt-2 bg-amber-500 text-white font-mono text-xs font-bold px-2.5 py-1 rounded-md shadow-sm">🗓️ ${tglRiilSusulan2}</div>
+                    </td>
+                    <td class="p-4 border-r border-gray-100 font-medium space-y-1 text-gray-900">
+                        <div>• NPK 15-15-15: <span class="font-bold text-blue-700">${Math.round(d.susulan2.npk)} kg</span></div>
+                        <div>• Urea: <span class="font-bold text-amber-700">${Math.round(d.susulan2.urea)} kg</span></div>
+                        <div>• KCl: <span class="font-bold text-purple-700">${Math.round(d.susulan2.kcl)} kg</span></div>
+                    </td>
+                    <td class="p-4 align-top space-y-1.5 text-xs md:text-sm">
+                        <p><b>Waktu Aplikasi:</b> Diaplikasikan pada umur <b>${hstSusulan2} HST</b> (Fase Primordia / Bunting).</p>
+                        <p><b>Metode:</b> Tebar merata menjelang pengaliran air berkala berikutnya agar unsur Kalium tinggi terserap cepat oleh tanaman.</p>
+                        <p class="text-xs text-gray-500 italic">🎯 <b>Fokus:</b> Suplai hara makro pengisian bulir untuk mendongkrak persentase rendemen buah giling serta bobot total gabah per rumpun.</p>
+                    </td>
+                </tr>
+            `;
+
+            // Buka kontainer visual hasil
             document.getElementById('placeholderHasil').classList.add('hidden');
             document.getElementById('kontenHasil').classList.remove('hidden');
-
-            renderTabel();
-        }
-
-        function gantiTab(tipe) {
-            tabAktif = tipe;
-            const btnTunggal = document.getElementById('btnTabTunggal');
-            const btnMajemuk = document.getElementById('btnTabMajemuk');
-
-            if (tipe === 'tunggal') {
-                btnTunggal.className = "w-1/2 py-2.5 px-4 rounded-lg font-medium text-sm transition cursor-pointer text-center bg-green-600 text-white shadow-sm";
-                btnMajemuk.className = "w-1/2 py-2.5 px-4 rounded-lg font-medium text-sm transition cursor-pointer text-center bg-gray-100 text-gray-600 hover:bg-gray-200";
-            } else {
-                btnMajemuk.className = "w-1/2 py-2.5 px-4 rounded-lg font-medium text-sm transition cursor-pointer text-center bg-green-600 text-white shadow-sm";
-                btnTunggal.className = "w-1/2 py-2.5 px-4 rounded-lg font-medium text-sm transition cursor-pointer text-center bg-gray-100 text-gray-600 hover:bg-gray-200";
-            }
-            renderTabel();
-        }
-
-        function renderTabel() {
-            if (!dataHasilKalkulasi) return;
-
-            const tbody = document.getElementById('bodyTabelPupuk');
-            tbody.innerHTML = ""; 
-
-            const waktu = dataHasilKalkulasi.waktu;
-
-            if (tabAktif === 'tunggal') {
-                const d = dataHasilKalkulasi.tunggal;
-                tbody.innerHTML = `
-                    <tr class="hover:bg-gray-50/80 transition">
-                        <td class="p-4 border-r border-gray-100 align-top">
-                            <div class="font-bold text-gray-900 md:text-base">1. Pemupukan Dasar</div>
-                            <div class="inline-block mt-2 bg-emerald-600 text-white font-mono text-xs font-bold px-2.5 py-1 rounded-md shadow-sm">🗓️ ${waktu.dasar.tgl}</div>
-                        </td>
-                        <td class="p-4 border-r border-gray-100 font-medium space-y-1 text-gray-900">
-                            <div>• Organik: <span class="font-bold text-emerald-700">${Math.round(d.dasar.organik)} kg</span></div>
-                            <div>• SP-36: <span class="font-bold text-blue-700">${Math.round(d.dasar.sp36)} kg</span></div>
-                            <div>• Urea: <span class="font-bold text-amber-700">${Math.round(d.dasar.urea)} kg</span></div>
-                            <div>• KCl: <span class="font-bold text-purple-700">${Math.round(d.dasar.kcl)} kg</span></div>
-                        </td>
-                        <td class="p-4 align-top space-y-1.5 text-xs md:text-sm">
-                            <p><b>Waktu Aplikasi:</b> Diaplikasikan pada <b>${waktu.dasar.hst} HST</b>.</p>
-                            <p><b>Metode:</b> Tebar merata seluruh Pupuk Organik + Makro saat air sawah kondisi <b>macak-macak</b>.</p>
-                            <p class="text-xs text-gray-500 italic">🎯 <b>Fokus:</b> Menyediakan nutrisi awal bagi rumpun muda untuk mempercepat pemulihan akar pasca pindah tanam.</p>
-                        </td>
-                    </tr>
-                    <tr class="hover:bg-gray-50/80 transition">
-                        <td class="p-4 border-r border-gray-100 align-top">
-                            <div class="font-bold text-gray-900 md:text-base">2. Susulan Tahap I</div>
-                            <div class="inline-block mt-2 bg-blue-600 text-white font-mono text-xs font-bold px-2.5 py-1 rounded-md shadow-sm">🗓️ ${waktu.susulan1.tgl}</div>
-                        </td>
-                        <td class="p-4 border-r border-gray-100 font-medium space-y-1 text-gray-900">
-                            <div>• Urea: <span class="font-bold text-amber-700">${Math.round(d.susulan1.urea)} kg</span></div>
-                            <div>• KCl: <span class="font-bold text-purple-700">${Math.round(d.susulan1.kcl)} kg</span></div>
-                        </td>
-                        <td class="p-4 align-top space-y-1.5 text-xs md:text-sm">
-                            <p><b>Waktu Aplikasi:</b> Diaplikasikan tepat pada umur <b>${waktu.susulan1.hst} HST</b>.</p>
-                            <p><b>Metode:</b> Tabur merata diarahkan dekat pangkal rumpun padi. Jika menggunakan Legowo, sebar pada barisan dalam lorong.</p>
-                            <p class="text-xs text-gray-500 italic">🎯 <b>Fokus:</b> Memaksimalkan pembentukan jumlah anakan produktif per rumpun tanaman.</p>
-                        </td>
-                    </tr>
-                    <tr class="hover:bg-gray-50/80 transition">
-                        <td class="p-4 border-r border-gray-100 align-top">
-                            <div class="font-bold text-gray-900 md:text-base">3. Susulan Tahap II</div>
-                            <div class="inline-block mt-2 bg-amber-500 text-white font-mono text-xs font-bold px-2.5 py-1 rounded-md shadow-sm">🗓️ ${waktu.susulan2.tgl}</div>
-                        </td>
-                        <td class="p-4 border-r border-gray-100 font-medium space-y-1 text-gray-900">
-                            <div>• Urea: <span class="font-bold text-amber-700">${Math.round(d.susulan2.urea)} kg</span></div>
-                            <div>• KCl: <span class="font-bold text-purple-700">${Math.round(d.susulan2.kcl)} kg</span></div>
-                        </td>
-                        <td class="p-4 align-top space-y-1.5 text-xs md:text-sm">
-                            <p><b>Waktu Aplikasi:</b> Diaplikasikan pada umur <b>${waktu.susulan2.hst} HST</b> (Fase Primordia / Bunting).</p>
-                            <p><b>Metode:</b> Masukkan hara saat pelepah batang membulat untuk pengisian malai yang optimal.</p>
-                            <p class="text-xs text-gray-500 italic">🎯 <b>Fokus:</b> Meningkatkan pengisian bulir gabah pada tiap rumpun agar padat berisi dan meminimalisir gabah hampa.</p>
-                        </td>
-                    </tr>
-                `;
-            } else {
-                const d = dataHasilKalkulasi.majemuk;
-                tbody.innerHTML = `
-                    <tr class="hover:bg-gray-50/80 transition">
-                        <td class="p-4 border-r border-gray-100 align-top">
-                            <div class="font-bold text-gray-900 md:text-base">1. Pemupukan Dasar</div>
-                            <div class="inline-block mt-2 bg-emerald-600 text-white font-mono text-xs font-bold px-2.5 py-1 rounded-md shadow-sm">🗓️ ${waktu.dasar.tgl}</div>
-                        </td>
-                        <td class="p-4 border-r border-gray-100 font-medium space-y-1 text-gray-900">
-                            <div>• Organik: <span class="font-bold text-emerald-700">${Math.round(d.dasar.organik)} kg</span></div>
-                            <div>• NPK 15-15-15: <span class="font-bold text-blue-700">${Math.round(d.dasar.npk)} kg</span></div>
-                            <div>• Urea: <span class="font-bold text-amber-700">${Math.round(d.dasar.urea)} kg</span></div>
-                        </td>
-                        <td class="p-4 align-top space-y-1.5 text-xs md:text-sm">
-                            <p><b>Waktu Aplikasi:</b> Ditabur pada <b>${waktu.dasar.hst} HST</b> saat kondisi macak-macak.</p>
-                            <p><b>Metode:</b> Satukan pupuk dengan lumpur atas permukaan lahan agar hara makro terikat dekat dengan zona akar awal.</p>
-                            <p class="text-xs text-gray-500 italic">🎯 <b>Fokus:</b> Menyediakan fondasi hara N, P, K berimbang bagi seluruh rumpun di masa awal vegetatif.</p>
-                        </td>
-                    </tr>
-                    <tr class="hover:bg-gray-50/80 transition">
-                        <td class="p-4 border-r border-gray-100 align-top">
-                            <div class="font-bold text-gray-900 md:text-base">2. Susulan Tahap I</div>
-                            <div class="inline-block mt-2 bg-blue-600 text-white font-mono text-xs font-bold px-2.5 py-1 rounded-md shadow-sm">🗓️ ${waktu.susulan1.tgl}</div>
-                        </td>
-                        <td class="p-4 border-r border-gray-100 font-medium space-y-1 text-gray-900">
-                            <div>• NPK 15-15-15: <span class="font-bold text-blue-700">${Math.round(d.susulan1.npk)} kg</span></div>
-                            <div>• Urea: <span class="font-bold text-amber-700">${Math.round(d.susulan1.urea)} kg</span></div>
-                            <div>• KCl: <span class="font-bold text-purple-700">${Math.round(d.susulan1.kcl)} kg</span></div>
-                        </td>
-                        <td class="p-4 align-top space-y-1.5 text-xs md:text-sm">
-                            <p><b>Waktu Aplikasi:</b> Masukkan pada umur <b>${waktu.susulan1.hst} HST</b>.</p>
-                            <p><b>Metode:</b> Jika menggunakan model <b>Legowo 2:1</b>, tabur fokus di dalam lorong barisan tanaman guna menghemat tenaga kerja dan menaikkan efisiensi serapan.</p>
-                            <p class="text-xs text-gray-500 italic">🎯 <b>Fokus:</b> Memacu pembentukan anakan produktif yang kokoh dan berbatang kuat.</p>
-                        </td>
-                    </tr>
-                    <tr class="hover:bg-gray-50/80 transition">
-                        <td class="p-4 border-r border-gray-100 align-top">
-                            <div class="font-bold text-gray-900 md:text-base">3. Susulan Tahap II</div>
-                            <div class="inline-block mt-2 bg-amber-500 text-white font-mono text-xs font-bold px-2.5 py-1 rounded-md shadow-sm">🗓️ ${waktu.susulan2.tgl}</div>
-                        </td>
-                        <td class="p-4 border-r border-gray-100 font-medium space-y-1 text-gray-900">
-                            <div>• NPK 15-15-15: <span class="font-bold text-blue-700">${Math.round(d.susulan2.npk)} kg</span></div>
-                            <div>• Urea: <span class="font-bold text-amber-700">${Math.round(d.susulan2.urea)} kg</span></div>
-                            <div>• KCl: <span class="font-bold text-purple-700">${Math.round(d.susulan2.kcl)} kg</span></div>
-                        </td>
-                        <td class="p-4 align-top space-y-1.5 text-xs md:text-sm">
-                            <p><b>Waktu Aplikasi:</b> Diaplikasikan pada umur <b>${waktu.susulan2.hst} HST</b> (Fase Primordia).</p>
-                            <p><b>Metode:</b> Tebar merata menjelang pengaliran air berkala berikutnya agar unsur Kalium tinggi terserap cepat.</p>
-                            <p class="text-xs text-gray-500 italic">🎯 <b>Fokus:</b> Meningkatkan bobot gabah per rumpun serta menaikkan kualitas rendemen hasil giling.</p>
-                        </td>
-                    </tr>
-                `;
-            }
         }
     </script>
 </body>
