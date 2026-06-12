@@ -4,36 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aplikasi Rumus Pemupukan Tanaman Padi</title>
-    <!-- Menggunakan Tailwind CSS untuk Tampilan Modern & Responsive -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans antialiased">
 
     <div class="max-w-5xl mx-auto p-4 md:p-8">
-        <!-- Header -->
         <header class="text-center mb-8 bg-green-700 text-white p-6 rounded-2xl shadow-md">
             <h1 class="text-2xl md:text-3xl font-bold tracking-wide">RUMUS PEMUPUKAN TANAMAN PADI</h1>
             <p class="text-green-100 mt-2 text-sm md:text-base">Kalkulator Presisi Dosis, Waktu, Jarak Tanam, dan Populasi Rumpun</p>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <!-- Form Input -->
             <form id="kalkulatorForm" class="lg:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4 h-fit" onsubmit="hitungDanKirim(event)">
                 <h2 class="text-lg font-semibold text-gray-700 border-b pb-2 border-gray-100">⚙️ Identitas & Lahan</h2>
                 
-                <!-- 1. Input Nama Petani -->
                 <div>
                     <label class="block text-sm font-medium text-gray-600 mb-1">Nama Petani</label>
                     <input type="text" id="namaPetani" required class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:outline-none text-sm" placeholder="Contoh: Pak Tarsono">
                 </div>
 
-                <!-- 2. Input Alamat / Blok -->
                 <div>
                     <label class="block text-sm font-medium text-gray-600 mb-1">Alamat / Blok Sawah</label>
                     <input type="text" id="alamatPetani" required class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:outline-none text-sm" placeholder="Contoh: Blok Sawah Kulon / Desa A">
                 </div>
 
-                <!-- 3. Varietas -->
                 <div>
                     <label class="block text-sm font-medium text-gray-600 mb-1">Varietas Padi</label>
                     <select id="varietas" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:outline-none text-sm">
@@ -42,7 +36,6 @@
                     </select>
                 </div>
 
-                <!-- 4. Luas Lahan -->
                 <div>
                     <label class="block text-sm font-medium text-gray-600 mb-1">Luas Lahan</label>
                     <div class="flex space-x-2">
@@ -54,7 +47,6 @@
                     </div>
                 </div>
 
-                <!-- 5. Model Jarak Tanam -->
                 <div>
                     <label class="block text-sm font-medium text-gray-600 mb-1">Model Jarak Tanam</label>
                     <select id="jarakTanam" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:outline-none text-sm">
@@ -66,35 +58,28 @@
                     </select>
                 </div>
 
-                <!-- 6. Potensi Hasil -->
                 <div>
                     <label class="block text-sm font-medium text-gray-600 mb-1">Target Hasil (Ton/Ha)</label>
                     <input type="number" id="targetHasil" min="4" max="12" step="0.5" value="10" required class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:outline-none text-sm">
                 </div>
 
-                <!-- 7. Tanggal Persemaian -->
                 <div>
                     <label class="block text-sm font-medium text-gray-600 mb-1">Tanggal Sebar Semai</label>
-                    <input type="date" id="tglSemai" required class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-green-500 focus:outline-none">
+                    <input type="date" id="tglSemai" onchange="perbaruiTanggalTanamOtomatis()" required class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-green-500 focus:outline-none">
                 </div>
 
-                <!-- Tombol Submit & Status -->
                 <button type="submit" id="btnSubmit" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium p-3 rounded-lg transition shadow-md cursor-pointer text-center text-sm flex items-center justify-center gap-2">
                     <span>🚀 Hitung & Kirim ke Spreadsheet</span>
                 </button>
             </form>
 
-            <!-- Kolom Hasil -->
             <div class="lg:col-span-8 space-y-6">
-                <!-- Panduan Awal Sebelum Hitung -->
                 <div id="placeholderHasil" class="bg-white p-12 rounded-2xl shadow-sm border border-gray-200 text-center text-gray-400">
                     <p class="text-6xl mb-4">🌾</p>
                     <p class="text-base font-medium">Silakan isi data lahan di samping, kemudian klik tombol untuk memproses perhitungan rumus lapangan.</p>
                 </div>
 
-                <!-- Kontainer Hasil (Hidden secara bawaan) -->
                 <div id="kontenHasil" class="hidden space-y-6">
-                    <!-- Ringkasan Profil Petani & Estimasi Populasi Rumpun -->
                     <div class="bg-emerald-800 text-white p-5 rounded-xl shadow-md grid grid-cols-1 md:grid-cols-3 gap-4 text-center md:text-left">
                         <div>
                             <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Profil Hasil Lapangan</span>
@@ -105,7 +90,7 @@
                         <div class="border-y md:border-y-0 md:border-x border-emerald-700/60 py-2 md:py-0 md:px-4">
                             <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Model Jarak Tanam & Jadwal</span>
                             <p class="text-lg font-bold text-yellow-300" id="resModelJarak">-</p>
-                            <span class="text-xs text-emerald-100 block font-medium">Otomatis Tanam (HSS+15): <span id="resTglTanamOtomatis" class="text-white font-bold underline"></span></span>
+                            <span class="text-xs text-emerald-100 block font-medium">Otomatis Tanam (HSS+15): <span id="resTglTanamOtomatis" class="text-white font-bold text-sm bg-emerald-900 px-2 py-0.5 rounded shadow-sm inline-block mt-0.5">Belum Diisi</span></span>
                         </div>
                         <div>
                             <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Total Populasi Rumpun</span>
@@ -114,7 +99,6 @@
                         </div>
                     </div>
 
-                    <!-- Judul Jalur Pemupukan Tetap -->
                     <div class="bg-white px-5 py-3 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between">
                         <span class="font-bold text-gray-700 text-sm md:text-base flex items-center gap-2">
                             <span>🔵</span> Rekomendasi Jalur: Pupuk Majemuk + Organik
@@ -122,7 +106,6 @@
                         <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-1 rounded-full">Fokus Lapangan</span>
                     </div>
 
-                    <!-- TABEL OUTPUT MODEL GAMBAR -->
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse text-sm">
@@ -134,13 +117,11 @@
                                     </tr>
                                 </thead>
                                 <tbody id="bodyTabelPupuk" class="divide-y divide-gray-200 text-gray-700">
-                                    <!-- Data baris akan diisi secara dinamis oleh JavaScript -->
-                                </tbody>
+                                    </tbody>
                             </table>
                         </div>
                     </div>
 
-                    <!-- Tombol Cetak -->
                     <button onclick="window.print()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer text-sm">
                         📥 Download / Simpan ke File PDF / Cetak Halaman
                     </button>
@@ -152,6 +133,34 @@
     <script>
         // MASUKKAN URL GOOGLE APPS SCRIPT ANDA DI SINI
         const SCRIPT_URL = "URL_APLIKASI_WEB_APPS_SCRIPT_ANDA";
+
+        // Fungsi pembantu untuk mengubah format string tanggal YYYY-MM-DD menjadi objek Tanggal yang valid
+        function parseTanggalLokal(inputStr) {
+            if (!inputStr) return null;
+            const parts = inputStr.split('-');
+            return new Date(parts[0], parts[1] - 1, parts[2]);
+        }
+
+        // Fungsi pembantu untuk memformat objek Tanggal menjadi format Indonesia DD-MM-YYYY
+        function formatTanggalIndo(dateObj) {
+            const dd = String(dateObj.getDate()).padStart(2, '0');
+            const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const yyyy = dateObj.getFullYear();
+            return `${dd}-${mm}-${yyyy}`;
+        }
+
+        // Fungsi REALTIME: Mengubah isi kotak rekomendasi hijau secara instan saat tanggal semai dipilih
+        function perbaruiTanggalTanamOtomatis() {
+            const tglSemaiInput = document.getElementById('tglSemai').value;
+            const tglTanam = parseTanggalLokal(tglSemaiInput);
+            
+            if (tglTanam) {
+                tglTanam.setDate(tglTanam.getDate() + 15); // Tambah 15 hari otomatis
+                document.getElementById('resTglTanamOtomatis').innerText = formatTanggalIndo(tglTanam);
+            } else {
+                document.getElementById('resTglTanamOtomatis').innerText = "Belum Diisi";
+            }
+        }
 
         function hitungDanKirim(event) {
             event.preventDefault();
@@ -170,13 +179,12 @@
             const targetHasil = parseFloat(document.getElementById('targetHasil').value);
             const tglSemaiInput = document.getElementById('tglSemai').value;
 
-            // 2. LOGIKA UTAMA PERBAIKAN: Hitung Tanggal Tanam Otomatis (Semai + 15 Hari)
-            const parts = tglSemaiInput.split('-'); // Pecah YYYY-MM-DD
-            const tglTanam = new Date(parts[0], parts[1] - 1, parts[2]); // Buat objek date lokal yang aman
-            tglTanam.setDate(tglTanam.getDate() + 15); // Tambahkan 15 hari secara presisi
+            // 2. Hitung Tanggal Tanam Menggunakan Fungsi Lokal yang Akurat
+            const tglTanam = parseTanggalLokal(tglSemaiInput);
+            tglTanam.setDate(tglTanam.getDate() + 15); // Tanggal Semai + 15 Hari
 
-            // Format Tanggal Tanam untuk dipajang di Menu Rekomendasi Hijau (Atas)
-            const tglTanamFormatMenu = tglTanam.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+            // Tempel format tanggal ke bagian rekomendasi atas
+            const tglTanamFormatMenu = formatTanggalIndo(tglTanam);
             document.getElementById('resTglTanamOtomatis').innerText = tglTanamFormatMenu;
 
             // 3. Hitung Konversi Luas Lahan
@@ -195,8 +203,8 @@
             }
             let totalRumpunLahan = Math.round(rumpunPerHa * luasHektar);
 
-            // 5. Perhitungan Waktu Pemupukan Hari Setelah Tanam (HST)
-            const selisihHari = 15; // Dikunci karena waktu sebar ke tanam otomatis 15 hari
+            // 5. Perhitungan Hari Setelah Tanam (HST)
+            const selisihHari = 15; // Jeda sebar ke tanam dikunci 15 hari
             
             let hstDasar = 5; 
             let hstSusulan2 = Math.round(umurPadi - selisihHari - 60); 
@@ -205,16 +213,16 @@
             if (hstSusulan1 <= hstDasar) hstSusulan1 = 21;
             if (hstSusulan2 <= hstSusulan1) hstSusulan2 = 35;
 
-            // Fungsi kalkulasi tanggal riil kalender berdasarkan HST
-            const formatTanggalKalender = (hst) => {
-                let d = new Date(tglTanam);
+            // Fungsi kalkulasi tanggal riil kalender berdasarkan penambahan HST
+            const hitungTanggalRiil = (hst) => {
+                let d = new Date(tglTanam.getTime());
                 d.setDate(d.getDate() + hst);
-                return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+                return formatTanggalIndo(d);
             };
 
-            const tglRiilDasar = formatTanggalKalender(hstDasar);
-            const tglRiilSusulan1 = formatTanggalKalender(hstSusulan1);
-            const tglRiilSusulan2 = formatTanggalKalender(hstSusulan2);
+            const tglRiilDasar = hitungTanggalRiil(hstDasar);
+            const tglRiilSusulan1 = hitungTanggalRiil(hstSusulan1);
+            const tglRiilSusulan2 = hitungTanggalRiil(hstSusulan2);
 
             // 6. Rumus Perhitungan Dosis Pupuk
             const rasioTarget = targetHasil / 10;
@@ -269,6 +277,8 @@
                 btn.innerHTML = "<span>🚀 Hitung & Kirim ke Spreadsheet</span>";
                 document.getElementById('namaPetani').value = "";
                 document.getElementById('alamatPetani').value = "";
+                document.getElementById('tglSemai').value = "";
+                document.getElementById('resTglTanamOtomatis').innerText = "Belum Diisi";
             })
             .catch(err => {
                 alert("Gagal mengirim ke spreadsheet, cek koneksi internet atau URL script.");
