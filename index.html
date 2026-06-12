@@ -239,11 +239,11 @@
                 susulan2: { npk: 100 * totalFaktorMurni, urea: 110 * totalFaktorMurni, kcl: 50 * totalFaktorMurni }
             };
 
-            // PERBAIKAN: AKUMULASI TOTAL SELURUH DOSIS PUPUK DALAM 1 MUSIM TANAM
+            // AKUMULASI TOTAL SELURUH DOSIS PUPUK DALAM 1 MUSIM TANAM
             const totalOrganikMusim = Math.round(d.dasar.organik);
             const totalUreaMusim = Math.round(d.dasar.urea + d.susulan1.urea + d.susulan2.urea);
             const totalNpkMusim = Math.round(d.dasar.npk + d.susulan1.npk + d.susulan2.npk);
-            const totalKclMusim = Math.round(d.dasar.kcl + d.susulan1.kcl + d.susulan2.kcl); // Mengambil nilai dasar, susulan 1, dan susulan 2 secara benar
+            const totalKclMusim = Math.round(d.dasar.kcl + d.susulan1.kcl + d.susulan2.kcl); 
 
             // TAMPILKAN RINGKASAN PROFIL & LAHAN
             document.getElementById('resNamaPetani').innerText = namaPetani;
@@ -258,7 +258,7 @@
             document.getElementById('resTglTanamOtomatis').innerText = tglTanamFormatMenu;
             document.getElementById('resTglTanamJalur').innerText = tglTanamFormatMenu;
 
-            // TAMPILKAN ANGKA TOTAL KE KOTAK RINGKASAN
+            // TAMPILKAN ANGKA TOTAL KE KOTAK RINGKASAN (Sudah Fix ID totKcl)
             document.getElementById('totOrganik').innerText = totalOrganikMusim.toLocaleString('id-ID');
             document.getElementById('totUrea').innerText = totalUreaMusim.toLocaleString('id-ID');
             document.getElementById('totNpk').innerText = totalNpkMusim.toLocaleString('id-ID');
