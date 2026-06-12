@@ -64,12 +64,12 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-600 mb-1">Tanggal Semai</label>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Tanggal Sebar Semai</label>
                     <input type="date" id="tglSemai" required class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-green-500 focus:outline-none">
                 </div>
 
                 <button type="submit" id="btnSubmit" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium p-3 rounded-lg transition shadow-md text-center text-sm flex items-center justify-center gap-2" style="cursor: pointer;">
-                    <span>🚀 Hitung </span>
+                    <span>🚀 Hitung & Kirim ke Spreadsheet</span>
                 </button>
             </form>
 
@@ -96,6 +96,30 @@
                             <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Total Populasi Rumpun</span>
                             <p class="text-2xl font-black text-white" id="resTotalRumpun">0</p>
                             <span class="text-xs text-emerald-200 font-medium">Target: <span id="resTarget"></span> Ton/Ha</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-5 shadow-sm">
+                        <h3 class="text-sm font-bold text-amber-900 uppercase tracking-wide flex items-center gap-1.5 mb-3">
+                            📦 Total Kebutuhan Pupuk Lahan Petani (1 Musim Tanam)
+                        </h3>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                            <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-xs">
+                                <span class="text-xs text-gray-500 block font-medium">Pupuk Organik</span>
+                                <p class="text-lg font-black text-emerald-700 mt-1"><span id="totOrganik">0</span> <span class="text-xs font-bold text-gray-600">Kg</span></p>
+                            </div>
+                            <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-xs">
+                                <span class="text-xs text-gray-500 block font-medium">Urea (Nitrogen)</span>
+                                <p class="text-lg font-black text-amber-700 mt-1"><span id="totUrea">0</span> <span class="text-xs font-bold text-gray-600">Kg</span></p>
+                            </div>
+                            <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-xs">
+                                <span class="text-xs text-gray-500 block font-medium">NPK Phonska</span>
+                                <p class="text-lg font-black text-blue-700 mt-1"><span id="totNpk">0</span> <span class="text-xs font-bold text-gray-600">Kg</span></p>
+                            </div>
+                            <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-xs">
+                                <span class="text-xs text-gray-500 block font-medium">KCl (Kalium)</span>
+                                <p class="text-lg font-black text-purple-700 mt-1"><span id="totKcl">0</span> <span class="text-xs font-bold text-gray-600">Kg</span></p>
+                            </div>
                         </div>
                     </div>
 
@@ -136,7 +160,7 @@
 
     <script>
         // MASUKKAN URL GOOGLE APPS SCRIPT ANDA DI SINI
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzRXzPiEAd3CSktTHx4U1Bey3qQG9zZ2T_CejGE-8UYsWwnTqjfJD3KcYvWI5yJ0sZc/exec";
+        const SCRIPT_URL = "URL_APLIKASI_WEB_APPS_SCRIPT_ANDA";
 
         function parseTanggalLokal(inputStr) {
             if (!inputStr) return null;
@@ -189,10 +213,10 @@
             }
             let totalRumpunLahan = Math.round(rumpunPerHa * luasHektar);
 
-            // 5. PENYESUAIAN LOGIKA RUMUS PEMUPUKAN BARU (SESUAI INSTRUKSI)
-            let hstDasar = 5; // Rumus: Waktu Tanam + 5 Hari
-            let hstSusulan2 = Math.round(umurPadi - 15 - 60); // Rumus: Umur Varietas - 15 - 60
-            let hstSusulan1 = Math.round(hstSusulan2 / 2); // Rumus: (Umur Varietas - 15 - 60) / 2
+            // 5. Rumus Jadwal Waktu Pemupukan HST (Sesuai Aturan Baku Bapak)
+            let hstDasar = 5; 
+            let hstSusulan2 = Math.round(umurPadi - 15 - 60); 
+            let hstSusulan1 = Math.round(hstSusulan2 / 2); 
 
             const hitungTanggalRiil = (hst) => {
                 let d = new Date(tglTanam.getTime());
@@ -204,7 +228,7 @@
             const tglRiilSusulan1 = hitungTanggalRiil(hstSusulan1);
             const tglRiilSusulan2 = hitungTanggalRiil(hstSusulan2);
 
-            // 6. Rumus Perhitungan Dosis Pupuk
+            // 6. Rumus Perhitungan Dosis Pupuk Per Tahap
             const rasioTarget = targetHasil / 10;
             const faktorKepadatan = (rumpunPerHa / 100000) * 0.15 + 0.85; 
             const totalFaktorMurni = rasioTarget * faktorKepadatan * luasHektar;
@@ -215,27 +239,39 @@
                 susulan2: { npk: 100 * totalFaktorMurni, urea: 110 * totalFaktorMurni, kcl: 50 * totalFaktorMurni }
             };
 
-            // ISI DATA KE ELEMEN HASIL SECARA SERENTAK
+            // AKUMULASI TOTAL SELURUH DOSIS PUPUK DALAM 1 MUSIM
+            const totalOrganikMusim = Math.round(d.dasar.organik);
+            const totalUreaMusim = Math.round(d.dasar.urea + d.susulan1.urea + d.susulan2.urea);
+            const totalNpkMusim = Math.round(d.dasar.npk + d.susulan1.npk + d.susulan2.npk);
+            const totalKclMusim = Math.round(d.dasar.kcl + d.susulan1.kcl + d.susulan2.kcl);
+
+            // TAMPILKAN RINGKASAN PROFIL & LAHAN
             document.getElementById('resNamaPetani').innerText = namaPetani;
             document.getElementById('resAlamatPetani').innerText = "Blok/Lokasi: " + alamatPetani;
             document.getElementById('resLuasHektar').innerText = luasHektar.toFixed(3);
             document.getElementById('resLuasBata').innerText = Math.round(luasBata);
             document.getElementById('resModelJarak').innerText = keteranganJarak;
+            document.getElementById('resTotalRumpun').innerText = totalRumpunLahan.toLocaleString('id-ID') + " Rumpun";
+            document.getElementById('resTarget').innerText = targetHasil;
             
-            // Pengisian Tanggal Tanam Hasil Kalkulasi Serentak
+            // Tampilkan Tanggal Tanam Hasil Kalkulasi
             document.getElementById('resTglTanamOtomatis').innerText = tglTanamFormatMenu;
             document.getElementById('resTglTanamJalur').innerText = tglTanamFormatMenu;
 
-            document.getElementById('resTotalRumpun').innerText = totalRumpunLahan.toLocaleString('id-ID') + " Rumpun";
-            document.getElementById('resTarget').innerText = targetHasil;
+            // TAMPILKAN ANGKA TOTAL KE KOTAK RINGKASAN BARU
+            document.getElementById('totOrganik').innerText = totalOrganikMusim.toLocaleString('id-ID');
+            document.getElementById('totUrea').innerText = totalUreaMusim.toLocaleString('id-ID');
+            document.getElementById('totNpk').innerText = totalNpkMusim.toLocaleString('id-ID');
+            document.getElementById('totKcl').innerText = totalKclMusim.toLocaleString('id-ID');
 
+            // Render rincian tabel per tahap harian
             renderTabelHasil(tglRiilDasar, tglRiilSusulan1, tglRiilSusulan2, hstDasar, hstSusulan1, hstSusulan2, d);
 
-            // Munculkan Kotak Hasil
+            // Buka Kotak Konten Hasil
             document.getElementById('placeholderHasil').classList.add('hidden');
             document.getElementById('kontenHasil').classList.remove('hidden');
 
-            // 7. PROSES KIRIM DATA KE GOOGLE SPREADSHEET
+            // 7. PROSES KIRIM DATA LENGKAP KE GOOGLE SPREADSHEET
             const payload = {
                 nama: namaPetani,
                 alamat: alamatPetani,
@@ -245,6 +281,8 @@
                 jarak: keteranganJarak,
                 target: targetHasil,
                 totalRumpun: totalRumpunLahan,
+                // Kolom tambahan untuk total rekap di spreadsheet
+                totalMusim: `Total 1 Musim -> Organik: ${totalOrganikMusim}kg, Urea: ${totalUreaMusim}kg, NPK: ${totalNpkMusim}kg, KCl: ${totalKclMusim}kg`,
                 pupukDasar: `Organik: ${Math.round(d.dasar.organik)}kg, NPK Phonska: ${Math.round(d.dasar.npk)}kg, Urea: ${Math.round(d.dasar.urea)}kg (${tglRiilDasar})`,
                 pupukSusulan1: `NPK Phonska: ${Math.round(d.susulan1.npk)}kg, Urea: ${Math.round(d.susulan1.urea)}kg (${tglRiilSusulan1})`,
                 pupukSusulan2: `NPK Phonska: ${Math.round(d.susulan2.npk)}kg, Urea: ${Math.round(d.susulan2.urea)}kg, KCl: ${Math.round(d.susulan2.kcl)}kg (${tglRiilSusulan2})`
@@ -257,18 +295,18 @@
                 body: JSON.stringify(payload)
             })
             .then(() => {
-                alert("Data Berhasil Dihitung!");
+                alert("Data Berhasil Dihitung & Langsung Terkirim ke Google Spreadsheet!");
                 btn.disabled = false;
-                btn.innerHTML = "<span>🚀 Hitung </span>";
+                btn.innerHTML = "<span>🚀 Hitung & Kirim ke Spreadsheet</span>";
                 
-                // Reset Form Input Utama
+                // Reset Form Input Utama setelah berhasil kirim
                 document.getElementById('kalkulatorForm').reset();
             })
             .catch(err => {
                 alert("Gagal mengirim ke spreadsheet, cek koneksi internet atau URL script.");
                 console.error(err);
                 btn.disabled = false;
-                btn.innerHTML = "<span>🚀 Hitung </span>";
+                btn.innerHTML = "<span>🚀 Hitung & Kirim ke Spreadsheet</span>";
             });
         }
 
