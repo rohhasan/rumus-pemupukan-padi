@@ -6,7 +6,6 @@
     <title>Aplikasi Rumus Pemupukan Tanaman Padi</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
-        /* CSS Tambahan untuk memastikan struktur tabel rapi saat diprint */
         @media print {
             body { background-color: #ffffff; color: #000000; }
             .bg-emerald-800 { background-color: #064e3b !important; color: #ffffff !important; }
@@ -73,16 +72,16 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-600 mb-1">Target Hasil (Ton/Ha)</label>
-                    <input type="number" id="targetHasil" min="4" max="12" step="0.5" placeholder="Angka" value=" " required class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:outline-none text-sm">
+                    <input type="number" id="targetHasil" min="4" max="12" step="0.5" value="10" required class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:outline-none text-sm">
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-600 mb-1">Tanggal Semai</label>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Tanggal Sebar Semai</label>
                     <input type="date" id="tglSemai" required class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-green-500 focus:outline-none">
                 </div>
 
                 <button type="submit" id="btnSubmit" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium p-3 rounded-lg transition shadow-md text-center text-sm flex items-center justify-center gap-2" style="cursor: pointer;">
-                    <span>🚀 Hitung </span>
+                    <span>🚀 Hitung & Kirim ke Spreadsheet</span>
                 </button>
             </form>
 
@@ -176,7 +175,7 @@
 
     <script>
         // MASUKKAN URL GOOGLE APPS SCRIPT ANDA DI SINI
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzRXzPiEAd3CSktTHx4U1Bey3qQG9zZ2T_CejGE-8UYsWwnTqjfJD3KcYvWI5yJ0sZc/exec";
+        const SCRIPT_URL = "URL_APLIKASI_WEB_APPS_SCRIPT_ANDA";
 
         function parseTanggalLokal(inputStr) {
             if (!inputStr) return null;
@@ -191,11 +190,8 @@
             return `${dd}-${mm}-${yyyy}`;
         }
 
-        // FUNGSI UTAMA UNTUK MENCETAK HASIL HITUNGAN SAJA
         function cetakHasilSaja() {
             const kontenHasil = document.getElementById('areaHasilCetak').innerHTML;
-            
-            // Buka jendela baru khusus cetak
             const jendelaCetak = window.open('', '_blank', 'width=900,height=700');
             
             jendelaCetak.document.write(`
@@ -226,7 +222,6 @@
                         ${kontenHasil}
                     </div>
                     <script>
-                        // Jalankan perintah print setelah konten termuat sempurna
                         window.onload = function() {
                             window.print();
                             window.close();
@@ -276,7 +271,7 @@
             }
             let totalRumpunLahan = Math.round(rumpunPerHa * luasHektar);
 
-            // Rumus Jadwal Waktu Pemupukan HST
+            // Rumus Jadwal Waktu Pemupukan HST (Aturan Baku Fisiologis)
             let hstDasar = 5; 
             let hstSusulan2 = Math.round(umurPadi - 15 - 60); 
             let hstSusulan1 = Math.round(hstSusulan2 / 2); 
@@ -291,22 +286,37 @@
             const tglRiilSusulan1 = hitungTanggalRiil(hstSusulan1);
             const tglRiilSusulan2 = hitungTanggalRiil(hstSusulan2);
 
-            // Rumus Perhitungan Dosis Pupuk Per Tahap
+            // LOGIKA BARU: Hitung Total Kebutuhan Pupuk Murni Lapangan Terkoreksi Kepadatan & Target Hasil
             const rasioTarget = targetHasil / 10;
             const faktorKepadatan = (rumpunPerHa / 100000) * 0.15 + 0.85; 
             const totalFaktorMurni = rasioTarget * faktorKepadatan * luasHektar;
 
-            const d = {
-                dasar: { organik: 2000 * rasioTarget * luasHektar, npk: 50 * totalFaktorMurni, urea: 55 * totalFaktorMurni, kcl: 0 },
-                susulan1: { npk: 100 * totalFaktorMurni, urea: 110 * totalFaktorMurni, kcl: 0 },
-                susulan2: { npk: 100 * totalFaktorMurni, urea: 110 * totalFaktorMurni, kcl: 50 * totalFaktorMurni }
-            };
+            // Dosis Baku Lapangan per 1 Ton Hasil dikalikan Faktor Koreksi Lapangan
+            // Total Baku Per Hektar Target Tinggi: NPK Phonska = 250 Kg, Urea = 275 Kg, KCl = 50 Kg
+            const totalOrganikMusim = Math.round(2000 * rasioTarget * luasHektar);
+            const totalNpkMusim = Math.round(250 * totalFaktorMurni);
+            const totalUreaMusim = Math.round(275 * totalFaktorMurni);
+            const totalKclMusim = Math.round(50 * totalFaktorMurni);
 
-            // AKUMULASI TOTAL SELURUH DOSIS PUPUK DALAM 1 MUSIM TANAM
-            const totalOrganikMusim = Math.round(d.dasar.organik);
-            const totalUreaMusim = Math.round(d.dasar.urea + d.susulan1.urea + d.susulan2.urea);
-            const totalNpkMusim = Math.round(d.dasar.npk + d.susulan1.npk + d.susulan2.npk);
-            const totalKclMusim = Math.round(d.dasar.kcl + d.susulan1.kcl + d.susulan2.kcl); 
+            // Distribusi Pembagian 3 Kali Waktu Aplikasi Kritis (Persentase Efisiensi)
+            const d = {
+                dasar: { 
+                    organik: totalOrganikMusim, 
+                    npk: Math.round(totalNpkMusim * 0.20), // 20% di awal
+                    urea: Math.round(totalUreaMusim * 0.20), // 20% di awal
+                    kcl: 0 
+                },
+                susulan1: { 
+                    npk: Math.round(totalNpkMusim * 0.40), // 40% di vegetatif aktif
+                    urea: Math.round(totalUreaMusim * 0.40), // 40% di vegetatif aktif
+                    kcl: 0 
+                },
+                susulan2: { 
+                    npk: Math.round(totalNpkMusim * 0.40), // 40% di primordia
+                    urea: Math.round(totalUreaMusim * 0.40), // 40% di primordia
+                    kcl: totalKclMusim // 100% Kalium dimasukkan di fase bunting untuk pengisian bulir
+                }
+            };
 
             // TAMPILKAN RINGKASAN PROFIL & LAHAN
             document.getElementById('resNamaPetani').innerText = namaPetani;
@@ -317,7 +327,6 @@
             document.getElementById('resTotalRumpun').innerText = totalRumpunLahan.toLocaleString('id-ID') + " Rumpun";
             document.getElementById('resTarget').innerText = targetHasil;
             
-            // Tampilkan Tanggal Tanam Hasil Kalkulasi
             document.getElementById('resTglTanamOtomatis').innerText = tglTanamFormatMenu;
             document.getElementById('resTglTanamJalur').innerText = tglTanamFormatMenu;
 
@@ -345,9 +354,9 @@
                 target: targetHasil,
                 totalRumpun: totalRumpunLahan,
                 totalMusim: `Total 1 Musim -> Organik: ${totalOrganikMusim}kg, Urea: ${totalUreaMusim}kg, NPK: ${totalNpkMusim}kg, KCl: ${totalKclMusim}kg`,
-                pupukDasar: `Organik: ${Math.round(d.dasar.organik)}kg, NPK Phonska: ${Math.round(d.dasar.npk)}kg, Urea: ${Math.round(d.dasar.urea)}kg (${tglRiilDasar})`,
-                pupukSusulan1: `NPK Phonska: ${Math.round(d.susulan1.npk)}kg, Urea: ${Math.round(d.susulan1.urea)}kg (${tglRiilSusulan1})`,
-                pupukSusulan2: `NPK Phonska: ${Math.round(d.susulan2.npk)}kg, Urea: ${Math.round(d.susulan2.urea)}kg, KCl: ${Math.round(d.susulan2.kcl)}kg (${tglRiilSusulan2})`
+                pupukDasar: `Organik: ${d.dasar.organik}kg, NPK Phonska: ${d.dasar.npk}kg, Urea: ${d.dasar.urea}kg (${tglRiilDasar})`,
+                pupukSusulan1: `NPK Phonska: ${d.susulan1.npk}kg, Urea: ${d.susulan1.urea}kg (${tglRiilSusulan1})`,
+                pupukSusulan2: `NPK Phonska: ${d.susulan2.npk}kg, Urea: ${d.susulan2.urea}kg, KCl: ${d.susulan2.kcl}kg (${tglRiilSusulan2})`
             };
 
             fetch(SCRIPT_URL, {
@@ -357,18 +366,16 @@
                 body: JSON.stringify(payload)
             })
             .then(() => {
-                alert("Data Berhasil Dihitung!");
+                alert("Data Berhasil Dihitung & Langsung Terkirim ke Google Spreadsheet!");
                 btn.disabled = false;
-                btn.innerHTML = "<span>🚀 Hitung </span>";
-                
-                // Reset Form Input Utama setelah berhasil kirim
+                btn.innerHTML = "<span>🚀 Hitung & Kirim ke Spreadsheet</span>";
                 document.getElementById('kalkulatorForm').reset();
             })
             .catch(err => {
                 alert("Gagal mengirim ke spreadsheet, cek koneksi internet atau URL script.");
                 console.error(err);
                 btn.disabled = false;
-                btn.innerHTML = "<span>🚀 Hitung </span>";
+                btn.innerHTML = "<span>🚀 Hitung & Kirim ke Spreadsheet</span>";
             });
         }
 
@@ -381,9 +388,9 @@
                         <div class="inline-block mt-2 bg-emerald-600 text-white font-mono text-xs font-bold px-2.5 py-1 rounded-md shadow-sm">🗓️ ${tglRiilDasar}</div>
                     </td>
                     <td class="p-4 border-r border-gray-100 font-medium space-y-1 text-gray-900">
-                        <div>• Urea: <span class="font-bold text-amber-700">${Math.round(d.dasar.urea)} kg</span></div>
-                        <div>• NPK Phonska: <span class="font-bold text-blue-700">${Math.round(d.dasar.npk)} kg</span></div>
-                        <div class="text-xs text-gray-500 font-normal mt-1">(Ditambah Organik: ${Math.round(d.dasar.organik)} kg)</div>
+                        <div>• Urea: <span class="font-bold text-amber-700">${d.dasar.urea} kg</span></div>
+                        <div>• NPK Phonska: <span class="font-bold text-blue-700">${d.dasar.npk} kg</span></div>
+                        <div class="text-xs text-gray-500 font-normal mt-1">(Ditambah Organik: ${d.dasar.organik} kg)</div>
                     </td>
                     <td class="p-4 align-top text-xs md:text-sm">
                         <p>Diaplikasikan tepat pada <b>${hstDasar} Hari Setelah Tanam (${hstDasar} HST)</b>. Sebar merata kondisi macak-macak.</p>
@@ -395,11 +402,11 @@
                         <div class="inline-block mt-2 bg-blue-600 text-white font-mono text-xs font-bold px-2.5 py-1 rounded-md shadow-sm">🗓️ ${tglRiilSusulan1}</div>
                     </td>
                     <td class="p-4 border-r border-gray-100 font-medium space-y-1 text-gray-900">
-                        <div>• Urea: <span class="font-bold text-amber-700">${Math.round(d.susulan1.urea)} kg</span></div>
-                        <div>• NPK Phonska: <span class="font-bold text-blue-700">${Math.round(d.susulan1.npk)} kg</span></div>
+                        <div>• Urea: <span class="font-bold text-amber-700">${d.susulan1.urea} kg</span></div>
+                        <div>• NPK Phonska: <span class="font-bold text-blue-700">${d.susulan1.npk} kg</span></div>
                     </td>
                     <td class="p-4 align-top text-xs md:text-sm">
-                        <p>Diaplikasikan tepat pada <b>${hstSusulan1} HST</b>. Tabur searah barisan tanaman.</p>
+                        <p>Diaplikasikan tepat pada <b>${hstSusulan1} HST</b>. Memacu jumlah pembentukan anakan padi aktif secara produktif.</p>
                     </td>
                 </tr>
                 <tr class="hover:bg-gray-50/80 transition">
@@ -408,12 +415,12 @@
                         <div class="inline-block mt-2 bg-amber-500 text-white font-mono text-xs font-bold px-2.5 py-1 rounded-md shadow-sm">🗓️ ${tglRiilSusulan2}</div>
                     </td>
                     <td class="p-4 border-r border-gray-100 font-medium space-y-1 text-gray-900">
-                        <div>• Urea: <span class="font-bold text-amber-700">${Math.round(d.susulan2.urea)} kg</span></div>
-                        <div>• NPK Phonska: <span class="font-bold text-blue-700">${Math.round(d.susulan2.npk)} kg</span></div>
-                        <div>• KCl: <span class="font-bold text-purple-700">${Math.round(d.susulan2.kcl)} kg</span></div>
+                        <div>• Urea: <span class="font-bold text-amber-700">${d.susulan2.urea} kg</span></div>
+                        <div>• NPK Phonska: <span class="font-bold text-blue-700">${d.susulan2.npk} kg</span></div>
+                        <div>• KCl: <span class="font-bold text-purple-700">${d.susulan2.kcl} kg</span></div>
                     </td>
                     <td class="p-4 align-top text-xs md:text-sm">
-                        <p>Diaplikasikan tepat pada <b>${hstSusulan2} HST</b> (Fase Bunting/Primordia).</p>
+                        <p>Diaplikasikan tepat pada <b>${hstSusulan2} HST</b> (Fase Bunting/Primordia). Kalium (KCl) fokus mengisi bulir agar bernas.</p>
                     </td>
                 </tr>
             `;
