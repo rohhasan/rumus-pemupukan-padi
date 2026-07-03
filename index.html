@@ -193,42 +193,34 @@
             const kontenHasil = document.getElementById('areaHasilCetak').innerHTML;
             const jendelaCetak = window.open('', '_blank', 'width=900,height=700');
             
-            jendelaCetak.document.write(`
-                <html>
-                <head>
-                    <title>Rekomendasi_Pemupukan_Petani</title>
-                    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"><\/script>
-                    <style>
-                        body { font-family: sans-serif; padding: 20px; background: #fff; color: #333; }
-                        @media print {
-                            body { padding: 0; }
-                            .bg-emerald-800 { background-color: #064e3b !important; color: #ffffff !important; }
-                            .text-yellow-300 { color: #fde047 !important; }
-                            .bg-gradient-to-r { background: #fef3c7 !important; border: 1px solid #f59e0b !important; }
-                            .bg-emerald-600 { background-color: #059669 !important; color: #ffffff !important; }
-                            .bg-blue-600 { background-color: #2563eb !important; color: #ffffff !important; }
-                            .bg-amber-500 { background-color: #d97706 !important; color: #ffffff !important; }
-                            .bg-slate-800 { background-color: #1e293b !important; color: #ffffff !important; }
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="max-w-4xl mx-auto space-y-6">
-                        <div class="text-center pb-4 border-b-2 border-gray-200">
-                            <h2 class="text-xl font-bold text-green-800 uppercase">Lembar Hasil Rekomendasi Pemupukan Padi</h2>
-                            <p class="text-xs text-gray-500">Dibuat Berdasarkan Perhitungan Aplikasi Presisi Lapangan</p>
-                        </div>
-                        \${kontenHasil}
-                    </div>
-                    <script>
-                        window.onload = function() {
-                            window.print();
-                            window.close();
-                        }
-                    <\/script>
-                </body>
-                </html>
-            `);
+            // Menggunakan penggabungan string biasa agar tidak bentrok interpretasi skrip browser
+            var htmlCetak = '<html><head><title>Rekomendasi_Pemupukan_Petani</title>' +
+                            '<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"><\/script>' +
+                            '<style>' +
+                            'body { font-family: sans-serif; padding: 20px; background: #fff; color: #333; }' +
+                            '@media print {' +
+                            'body { padding: 0; }' +
+                            '.bg-emerald-800 { background-color: #064e3b !important; color: #ffffff !important; }' +
+                            '.text-yellow-300 { color: #fde047 !important; }' +
+                            '.bg-gradient-to-r { background: #fef3c7 !important; border: 1px solid #f59e0b !important; }' +
+                            '.bg-emerald-600 { background-color: #059669 !important; color: #ffffff !important; }' +
+                            '.bg-blue-600 { background-color: #2563eb !important; color: #ffffff !important; }' +
+                            '.bg-amber-500 { background-color: #d97706 !important; color: #ffffff !important; }' +
+                            '.bg-slate-800 { background-color: #1e293b !important; color: #ffffff !important; }' +
+                            '}' +
+                            '</style></head><body>' +
+                            '<div class="max-w-4xl mx-auto space-y-6">' +
+                            '<div class="text-center pb-4 border-b-2 border-gray-200">' +
+                            '<h2 class="text-xl font-bold text-green-800 uppercase">Lembar Hasil Rekomendasi Pemupukan Padi</h2>' +
+                            '<p class="text-xs text-gray-500">Dibuat Berdasarkan Perhitungan Aplikasi Presisi Lapangan</p>' +
+                            '</div>' +
+                            kontenHasil +
+                            '</div>' +
+                            '<script>' +
+                            'window.onload = function() { window.print(); window.close(); }' +
+                            '<\/script></body></html>';
+
+            jendelaCetak.document.write(htmlCetak);
             jendelaCetak.document.close();
         }
 
@@ -285,13 +277,11 @@
             const tglRiilSusulan1 = hitungTanggalRiil(hstSusulan1);
             const tglRiilSusulan2 = hitungTanggalRiil(hstSusulan2);
 
-            // PERBAIKAN LOGIKA MATEMATIKA AGRONOMI (FIXED PRO-RATA)
-            // Target hasil selalu dikunci dalam skala Rasio per Hektar agar linier
-            const rasioTargetPerHa = targetHasil; // Target hasil di form adalah representasi Ton/Ha murni
-            const rasioTargetMurni = rasioTargetPerHa / 10;
+            // LOGIKA FIXED: Target hasil adalah dalam skala Ton/Ha murni (Potensi lahan per Hektar)
+            const rasioTargetMurni = targetHasil / 10;
             const faktorKepadatan = (rumpunPerHa / 100000) * 0.15 + 0.85; 
             
-            // Pengali Murni Lahan dipisah dari Rasio Potensi Varietas
+            // Total faktor dasar linier terikat luas lahan murni pro-rata tanpa pemotongan ganda
             const totalFaktorMurni = rasioTargetMurni * faktorKepadatan * luasHektar;
 
             // Kalkulasi Akumulatif Linier (Kg)
