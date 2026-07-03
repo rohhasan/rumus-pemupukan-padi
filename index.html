@@ -71,8 +71,9 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-600 mb-1">Target Hasil Per Hektar (Ton/Ha)</label>
-                    <input type="number" id="targetHasil" min="4" max="12" step="0.5" value="10" required class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:outline-none text-sm">
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Total Target Hasil Lahan (Ton)</label>
+                    <input type="number" id="targetHasil" min="1" max="100" step="0.1" value="10" required class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:outline-none text-sm">
+                    <p class="text-[11px] text-gray-400 mt-1">Masukkan total ton gabah yang ingin dihasilkan dari luas lahan tersebut.</p>
                 </div>
 
                 <div>
@@ -109,7 +110,7 @@
                             <div>
                                 <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Total Populasi Rumpun</span>
                                 <p class="text-2xl font-black text-white" id="resTotalRumpun">0</p>
-                                <span class="text-xs text-emerald-200 font-medium">Target Efektif: <span id="resTarget"></span> Ton/Ha</span>
+                                <span class="text-xs text-emerald-200 font-medium">Target Total: <span id="resTarget"></span> Ton</span>
                             </div>
                         </div>
 
@@ -193,7 +194,6 @@
             const kontenHasil = document.getElementById('areaHasilCetak').innerHTML;
             const jendelaCetak = window.open('', '_blank', 'width=900,height=700');
             
-            // Menggunakan penggabungan string biasa agar tidak bentrok interpretasi skrip browser
             var htmlCetak = '<html><head><title>Rekomendasi_Pemupukan_Petani</title>' +
                             '<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"><\/script>' +
                             '<style>' +
@@ -277,15 +277,13 @@
             const tglRiilSusulan1 = hitungTanggalRiil(hstSusulan1);
             const tglRiilSusulan2 = hitungTanggalRiil(hstSusulan2);
 
-            // LOGIKA FIXED: Target hasil adalah dalam skala Ton/Ha murni (Potensi lahan per Hektar)
-            const rasioTargetMurni = targetHasil / 10;
+            // REVOLUSI LOGIKA MATEMATIKA: Menggunakan Target Mutlak Ton Nyata di Lapangan
+            // Dosis dihitung proporsional berbasis total ton beban produksi riil
             const faktorKepadatan = (rumpunPerHa / 100000) * 0.15 + 0.85; 
-            
-            // Total faktor dasar linier terikat luas lahan murni pro-rata tanpa pemotongan ganda
-            const totalFaktorMurni = rasioTargetMurni * faktorKepadatan * luasHektar;
+            const totalFaktorMurni = (targetHasil / 10) * faktorKepadatan;
 
-            // Kalkulasi Akumulatif Linier (Kg)
-            const totalOrganikMusim = Math.round(2000 * rasioTargetMurni * luasHektar);
+            // Kalkulasi Akumulatif Linier Murni (Kg)
+            const totalOrganikMusim = Math.round(2000 * (targetHasil / 10));
             const totalNpkMusim = Math.round(250 * totalFaktorMurni);
             const totalUreaMusim = Math.round(275 * totalFaktorMurni);
             const totalKclMusim = Math.round(50 * totalFaktorMurni);
