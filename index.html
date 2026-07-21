@@ -6,27 +6,41 @@
     <title>Aplikasi Rumus Pemupukan Tanaman Padi</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
+        /* Optimasi Fitur Cetak / Print di Halaman yang Sama */
         @media print {
             body { background-color: #ffffff; color: #000000; }
-            .bg-emerald-800 { background-color: #064e3b !important; color: #ffffff !important; }
+            
+            /* Sembunyikan elemen yang tidak perlu dicetak */
+            header, form, #placeholderHasil, button {
+                display: none !important;
+            }
+
+            /* Tampilkan hanya area hasil */
+            body * { visibility: hidden; }
+            #areaHasilCetak, #areaHasilCetak * { visibility: visible; }
+            #areaHasilCetak { position: absolute; left: 0; top: 0; width: 100%; padding: 0; }
+
+            /* Paksa warna background muncul saat dicetak */
+            .bg-emerald-800 { background-color: #064e3b !important; color: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .text-yellow-300 { color: #fde047 !important; }
-            .bg-gradient-to-r { background: #fef3c7 !important; border: 1px solid #f59e0b !important; }
-            .bg-emerald-600 { background-color: #059669 !important; color: #ffffff !important; }
-            .bg-blue-600 { background-color: #2563eb !important; color: #ffffff !important; }
-            .bg-amber-500 { background-color: #d97706 !important; color: #ffffff !important; }
-            .bg-slate-800 { background-color: #1e293b !important; color: #ffffff !important; }
+            .bg-gradient-to-r { background: #fef3c7 !important; border: 1px solid #f59e0b !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .bg-emerald-600 { background-color: #059669 !important; color: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .bg-blue-600 { background-color: #2563eb !important; color: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .bg-amber-500 { background-color: #d97706 !important; color: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .bg-slate-800 { background-color: #1e293b !important; color: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans antialiased">
+<body class="bg-gray-50 text-gray-800 font-sans antialiased p-4 md:p-8">
 
-    <div class="max-w-5xl mx-auto p-4 md:p-8">
+    <div class="max-w-6xl mx-auto">
         <header class="text-center mb-8 bg-green-700 text-white p-6 rounded-2xl shadow-md">
             <h1 class="text-2xl md:text-3xl font-bold tracking-wide">RUMUS PEMUPUKAN TANAMAN PADI</h1>
             <p class="text-green-100 mt-2 text-sm md:text-base">Kalkulator Presisi Dosis, Waktu, Jarak Tanam, dan Populasi Rumpun</p>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Form Input -->
             <form id="kalkulatorForm" class="lg:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4 h-fit" onsubmit="hitungDanKirim(event)">
                 <h2 class="text-lg font-semibold text-gray-700 border-b pb-2 border-gray-100">⚙️ Identitas & Lahan</h2>
                 
@@ -51,7 +65,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-600 mb-1">Luas Lahan</label>
                     <div class="flex space-x-2">
-                        <input type="number" id="luasLahan" step="any" required class="w-2/3 bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:outline-none text-sm" placeholder="Angka">
+                        <input type="number" id="luasLahan" step="any" required class="w-2/3 bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:outline-none text-sm" placeholder="Angka Luas">
                         <select id="satuanLahan" class="w-1/3 bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:outline-none text-sm">
                             <option value="hektar">Hektar</option>
                             <option value="bata">Bata</option>
@@ -86,6 +100,7 @@
                 </button>
             </form>
 
+            <!-- Area Hasil -->
             <div class="lg:col-span-8 space-y-6">
                 <div id="placeholderHasil" class="bg-white p-12 rounded-2xl shadow-sm border border-gray-200 text-center text-gray-400">
                     <p class="text-6xl mb-4">🌾</p>
@@ -95,6 +110,7 @@
                 <div id="kontenHasil" class="hidden space-y-6">
                     
                     <div id="areaHasilCetak" class="space-y-6 bg-transparent">
+                        <!-- Header Hasil -->
                         <div class="bg-emerald-800 text-white p-5 rounded-xl shadow-md grid grid-cols-1 md:grid-cols-3 gap-4 text-center md:text-left">
                             <div>
                                 <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Profil Hasil Lapangan</span>
@@ -114,30 +130,32 @@
                             </div>
                         </div>
 
+                        <!-- Ringkasan Kebutuhan -->
                         <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-5 shadow-sm">
                             <h3 class="text-sm font-bold text-amber-900 uppercase tracking-wide flex items-center gap-1.5 mb-3">
                                 📦 Total Kebutuhan Pupuk Lahan Petani (1 Musim Tanam)
                             </h3>
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-                                <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-xs">
+                                <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-sm">
                                     <span class="text-xs text-gray-500 block font-medium">Pupuk Organik</span>
                                     <p class="text-lg font-black text-emerald-700 mt-1"><span id="totOrganik">0</span> <span class="text-xs font-bold text-gray-600">Kg</span></p>
                                 </div>
-                                <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-xs">
+                                <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-sm">
                                     <span class="text-xs text-gray-500 block font-medium">Urea (Nitrogen)</span>
                                     <p class="text-lg font-black text-amber-700 mt-1"><span id="totUrea">0</span> <span class="text-xs font-bold text-gray-600">Kg</span></p>
                                 </div>
-                                <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-xs">
+                                <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-sm">
                                     <span class="text-xs text-gray-500 block font-medium">NPK Phonska</span>
                                     <p class="text-lg font-black text-blue-700 mt-1"><span id="totNpk">0</span> <span class="text-xs font-bold text-gray-600">Kg</span></p>
                                 </div>
-                                <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-xs">
+                                <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-sm">
                                     <span class="text-xs text-gray-500 block font-medium">KCl (Kalium)</span>
                                     <p class="text-lg font-black text-purple-700 mt-1"><span id="totKcl">0</span> <span class="text-xs font-bold text-gray-600">Kg</span></p>
                                 </div>
                             </div>
                         </div>
 
+                        <!-- Banner Info -->
                         <div class="bg-white px-5 py-3 rounded-xl shadow-sm border border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                             <div class="font-bold text-gray-700 text-sm md:text-base flex flex-wrap items-center gap-2">
                                 <span>🔵</span> 
@@ -149,6 +167,7 @@
                             <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-1 rounded-full w-fit">Fokus Lapangan</span>
                         </div>
 
+                        <!-- Tabel Distribusi Pemupukan -->
                         <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left border-collapse text-sm">
@@ -160,14 +179,16 @@
                                         </tr>
                                     </thead>
                                     <tbody id="bodyTabelPupuk" class="divide-y divide-gray-200 text-gray-700">
-                                        </tbody>
+                                        <!-- Isi tabel dirender via JavaScript -->
+                                    </tbody>
                                 </table>
                             </div>
                         </div>
-                    </div>
+                    </div> <!-- End of areaHasilCetak -->
 
+                    <!-- Tombol Cetak Baru -->
                     <button onclick="cetakHasilSaja()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer text-sm">
-                        📥 Download / Simpan ke File PDF / Cetak Hasil Perhitungan
+                        📥 Cetak Hasil Perhitungan (Simpan ke PDF)
                     </button>
                 </div>
             </div>
@@ -175,6 +196,7 @@
     </div>
 
     <script>
+        // Ganti URL ini dengan URL Web App dari Google Apps Script Anda
         const SCRIPT_URL = "URL_APLIKASI_WEB_APPS_SCRIPT_ANDA";
 
         function parseTanggalLokal(inputStr) {
@@ -191,37 +213,8 @@
         }
 
         function cetakHasilSaja() {
-            const kontenHasil = document.getElementById('areaHasilCetak').innerHTML;
-            const jendelaCetak = window.open('', '_blank', 'width=900,height=700');
-            
-            var htmlCetak = '<html><head><title>Rekomendasi_Pemupukan_Petani</title>' +
-                            '<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"><\/script>' +
-                            '<style>' +
-                            'body { font-family: sans-serif; padding: 20px; background: #fff; color: #333; }' +
-                            '@media print {' +
-                            'body { padding: 0; }' +
-                            '.bg-emerald-800 { background-color: #064e3b !important; color: #ffffff !important; }' +
-                            '.text-yellow-300 { color: #fde047 !important; }' +
-                            '.bg-gradient-to-r { background: #fef3c7 !important; border: 1px solid #f59e0b !important; }' +
-                            '.bg-emerald-600 { background-color: #059669 !important; color: #ffffff !important; }' +
-                            '.bg-blue-600 { background-color: #2563eb !important; color: #ffffff !important; }' +
-                            '.bg-amber-500 { background-color: #d97706 !important; color: #ffffff !important; }' +
-                            '.bg-slate-800 { background-color: #1e293b !important; color: #ffffff !important; }' +
-                            '}' +
-                            '</style></head><body>' +
-                            '<div class="max-w-4xl mx-auto space-y-6">' +
-                            '<div class="text-center pb-4 border-b-2 border-gray-200">' +
-                            '<h2 class="text-xl font-bold text-green-800 uppercase">Lembar Hasil Rekomendasi Pemupukan Padi</h2>' +
-                            '<p class="text-xs text-gray-500">Dibuat Berdasarkan Perhitungan Aplikasi Presisi Lapangan</p>' +
-                            '</div>' +
-                            kontenHasil +
-                            '</div>' +
-                            '<script>' +
-                            'window.onload = function() { window.print(); window.close(); }' +
-                            '<\/script></body></html>';
-
-            jendelaCetak.document.write(htmlCetak);
-            jendelaCetak.document.close();
+            // Menggunakan fungsi window.print langsung dengan dukungan @media print di CSS
+            window.print();
         }
 
         function hitungDanKirim(event) {
@@ -231,7 +224,7 @@
             btn.disabled = true;
             btn.innerHTML = "⏳ Mengirim Data...";
 
-            // Ambil Parameter Input Identitas & Lahan
+            // Ambil Parameter Input
             const namaPetani = document.getElementById('namaPetani').value;
             const alamatPetani = document.getElementById('alamatPetani').value;
             const umurPadi = parseFloat(document.getElementById('varietas').value);
@@ -246,7 +239,7 @@
             tglTanam.setDate(tglTanam.getDate() + 15);
             const tglTanamFormatMenu = formatTanggalIndo(tglTanam);
 
-            // Hitung Konversi Luas Lahan
+            // Hitung Konversi Luas Lahan (Asumsi 1 Ha = 700 Bata)
             let luasHektar = satuanLahan === 'hektar' ? luasInput : luasInput / 700;
             let luasBata = satuanLahan === 'bata' ? luasInput : luasInput * 700;
 
@@ -277,12 +270,10 @@
             const tglRiilSusulan1 = hitungTanggalRiil(hstSusulan1);
             const tglRiilSusulan2 = hitungTanggalRiil(hstSusulan2);
 
-            // REVOLUSI LOGIKA MATEMATIKA: Menggunakan Target Mutlak Ton Nyata di Lapangan
-            // Dosis dihitung proporsional berbasis total ton beban produksi riil
+            // Kalkulasi Akumulatif Linier Murni (Kg)
             const faktorKepadatan = (rumpunPerHa / 100000) * 0.15 + 0.85; 
             const totalFaktorMurni = (targetHasil / 10) * faktorKepadatan;
 
-            // Kalkulasi Akumulatif Linier Murni (Kg)
             const totalOrganikMusim = Math.round(2000 * (targetHasil / 10));
             const totalNpkMusim = Math.round(250 * totalFaktorMurni);
             const totalUreaMusim = Math.round(275 * totalFaktorMurni);
@@ -326,8 +317,10 @@
             document.getElementById('totNpk').innerText = totalNpkMusim.toLocaleString('id-ID');
             document.getElementById('totKcl').innerText = totalKclMusim.toLocaleString('id-ID');
 
+            // Render Tabel
             renderTabelHasil(tglRiilDasar, tglRiilSusulan1, tglRiilSusulan2, hstDasar, hstSusulan1, hstSusulan2, d);
 
+            // Tampilkan Konten
             document.getElementById('placeholderHasil').classList.add('hidden');
             document.getElementById('kontenHasil').classList.remove('hidden');
 
@@ -347,6 +340,14 @@
                 pupukSusulan2: `NPK Phonska: ${d.susulan2.npk}kg, Urea: ${d.susulan2.urea}kg, KCl: ${d.susulan2.kcl}kg (${tglRiilSusulan2})`
             };
 
+            // Pastikan URL SCRIPT_URL sudah valid
+            if(SCRIPT_URL === "URL_APLIKASI_WEB_APPS_SCRIPT_ANDA") {
+                alert("Data berhasil dihitung! (Peringatan: Data belum terkirim karena SCRIPT_URL belum Anda isi).");
+                btn.disabled = false;
+                btn.innerHTML = "<span>🚀 Hitung & Kirim ke Spreadsheet</span>";
+                return; // Stop pengiriman jika URL belum diganti
+            }
+
             fetch(SCRIPT_URL, {
                 method: "POST",
                 mode: "no-cors",
@@ -357,7 +358,6 @@
                 alert("Data Berhasil Dihitung & Langsung Terkirim ke Google Spreadsheet!");
                 btn.disabled = false;
                 btn.innerHTML = "<span>🚀 Hitung & Kirim ke Spreadsheet</span>";
-                document.getElementById('kalkulatorForm').reset();
             })
             .catch(err => {
                 alert("Gagal mengirim ke spreadsheet, cek koneksi internet atau URL script.");
