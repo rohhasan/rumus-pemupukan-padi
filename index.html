@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Pupuk Padi (Integrasi Alokasi Subsidi)</title>
+    <title>Kalkulator Pupuk Padi (Intensifikasi 10 Ton)</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         /* Optimasi Fitur Cetak / Print di Halaman yang Sama */
@@ -29,8 +29,8 @@
 
     <div class="max-w-6xl mx-auto">
         <header class="text-center mb-8 bg-green-700 text-white p-6 rounded-2xl shadow-md">
-            <h1 class="text-2xl md:text-3xl font-bold tracking-wide">RUMUS PEMUPUKAN TANAMAN PADI</h1>
-            <p class="text-green-100 mt-2 text-sm md:text-base">Kalkulator Presisi Dosis Lapangan & Analisis Defisit Kuota Subsidi RDKK</p>
+            <h1 class="text-2xl md:text-3xl font-bold tracking-wide">RUMUS INTENSIFIKASI PADI</h1>
+            <p class="text-green-100 mt-2 text-sm md:text-base">Optimalisasi Hara, Penghematan KCl, & Penambahan Silika/Boron</p>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -41,11 +41,6 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-600 mb-1">Nama Petani</label>
                     <input type="text" id="namaPetani" required class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:outline-none text-sm" placeholder="Contoh: Pak Tarsono">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-600 mb-1">Alamat / Blok Sawah</label>
-                    <input type="text" id="alamatPetani" required class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:outline-none text-sm" placeholder="Contoh: Blok Sawah Kulon / Desa A">
                 </div>
 
                 <div>
@@ -70,18 +65,17 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-600 mb-1">Model Jarak Tanam</label>
                     <select id="jarakTanam" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:outline-none text-sm">
+                        <option value="tegel30" selected>Tegel 30 x 30 cm</option>
                         <option value="legowo21">Legowo 2:1 (10 cm x 20 cm x 40 cm)</option>
                         <option value="tegel25">Tegel 25 x 25 cm</option>
-                        <option value="tegel30">Tegel 30 x 30 cm</option>
                         <option value="tegel35">Tegel 35 x 35 cm</option>
-                        <option value="tegel40">Tegel 40 x 40 cm</option>
                     </select>
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-600 mb-1">Target Hasil (Ton)</label>
-                    <input type="number" id="targetHasil" min="1" max="100" step="0.1" value="7" required class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:outline-none text-sm">
-                    <p class="text-[11px] text-gray-400 mt-1">Total Ton gabah yang diharapkan dari luas lahan di atas.</p>
+                    <input type="number" id="targetHasil" min="1" max="100" step="0.1" value="10" required class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-green-500 focus:outline-none text-sm text-green-700 font-bold">
+                    <p class="text-[11px] text-gray-400 mt-1">Sistem otomatis menyeimbangkan defisit hara secara realistis.</p>
                 </div>
 
                 <div>
@@ -98,7 +92,7 @@
             <div class="lg:col-span-8 space-y-6">
                 <div id="placeholderHasil" class="bg-white p-12 rounded-2xl shadow-sm border border-gray-200 text-center text-gray-400">
                     <p class="text-6xl mb-4">🌾</p>
-                    <p class="text-base font-medium">Silakan isi data lahan di samping, kemudian klik tombol untuk memproses perhitungan rekomendasi lapangan.</p>
+                    <p class="text-base font-medium">Silakan isi form di samping untuk menghitung rekomendasi pemupukan presisi.</p>
                 </div>
 
                 <div id="kontenHasil" class="hidden space-y-6">
@@ -107,63 +101,71 @@
                         <!-- Header Hasil -->
                         <div class="bg-emerald-800 text-white p-5 rounded-xl shadow-md grid grid-cols-1 md:grid-cols-3 gap-4 text-center md:text-left">
                             <div>
-                                <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Profil Hasil Lapangan</span>
+                                <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Profil Lahan</span>
                                 <p class="text-lg font-bold" id="resNamaPetani">-</p>
-                                <span class="text-xs text-emerald-100" id="resAlamatPetani">-</span>
                                 <span class="text-xs text-emerald-200 block mt-1">Luas: <span id="resLuasHektar"></span> Ha (<span id="resLuasBata"></span> Bata)</span>
                             </div>
                             <div class="border-y md:border-y-0 md:border-x border-emerald-700/60 py-2 md:py-0 md:px-4">
-                                <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Model Jarak Tanam & Jadwal</span>
+                                <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Jadwal Tanam</span>
                                 <p class="text-lg font-bold text-yellow-300" id="resModelJarak">-</p>
                                 <span class="text-xs text-emerald-100 block font-medium">Waktu Tanam: <span id="resTglTanamOtomatis" class="text-white font-bold text-sm bg-emerald-900 px-2 py-0.5 rounded shadow-sm inline-block mt-0.5">-</span></span>
                             </div>
                             <div>
-                                <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Total Populasi Rumpun</span>
-                                <p class="text-2xl font-black text-white" id="resTotalRumpun">0</p>
-                                <span class="text-xs text-emerald-200 font-medium">Target Total: <span id="resTarget"></span> Ton</span>
+                                <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold block">Target Pencapaian</span>
+                                <p class="text-2xl font-black text-white"><span id="resTarget"></span> Ton</p>
+                                <span class="text-xs text-emerald-200 font-medium">Populasi: <span id="resTotalRumpun"></span> Rumpun</span>
                             </div>
                         </div>
 
                         <!-- Ringkasan Kebutuhan & Integrasi Subsidi -->
-                        <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-5 shadow-sm">
-                            <h3 class="text-sm font-bold text-amber-900 uppercase tracking-wide flex items-center gap-1.5 mb-3">
+                        <div class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-5 shadow-sm">
+                            <h3 class="text-sm font-bold text-emerald-900 uppercase tracking-wide flex items-center gap-1.5 mb-3">
                                 📦 Rekomendasi Pemupukan Lahan (1 Musim Tanam)
                             </h3>
                             
-                            <p class="text-xs text-amber-800 mb-3 font-medium bg-amber-100 p-2 rounded-md border border-amber-200">
-                                ℹ️ Kalkulasi di bawah menggabungkan <b class="text-green-700">Jatah Subsidi (Asumsi 275kg Urea & 250kg Phonska / Ha)</b> dengan <b class="text-red-700">Defisit Tambahan Non-Subsidi</b> yang wajib dipenuhi untuk mencapai target tonase Anda.
+                            <p class="text-xs text-teal-800 mb-4 font-medium bg-teal-100/50 p-2 rounded-md border border-teal-200 leading-relaxed">
+                                ℹ️ Kalkulasi ini telah menerapkan penghematan biaya. Kebutuhan KCl ditekan serendah mungkin dengan memaksimalkan Phonska (300kg/Ha), pengembalian jerami, dan disokong oleh unsur mikro (Silika & Boron).
                             </p>
 
-                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-                                <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-sm flex flex-col justify-between">
-                                    <span class="text-xs text-gray-500 block font-medium">Pupuk Organik</span>
-                                    <p class="text-xl font-black text-emerald-700 mt-1 mb-2"><span id="totOrganik">0</span> <span class="text-xs font-bold text-gray-600">Kg</span></p>
-                                    <span class="text-[10px] font-medium text-emerald-600 bg-emerald-50 px-1 py-1 rounded">Dasar / Kompos</span>
+                            <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-center">
+                                <div class="bg-white p-3 rounded-lg border border-emerald-200 shadow-sm flex flex-col justify-between">
+                                    <span class="text-xs text-gray-500 block font-medium">Organik / Kompos</span>
+                                    <p class="text-xl font-black text-emerald-700 mt-1 mb-1"><span id="totOrganik">0</span> <span class="text-xs font-bold text-gray-600">Kg</span></p>
                                 </div>
                                 
-                                <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-sm flex flex-col justify-between">
+                                <div class="bg-white p-3 rounded-lg border border-emerald-200 shadow-sm flex flex-col justify-between">
                                     <span class="text-xs text-gray-500 block font-medium">Total Urea</span>
                                     <p class="text-xl font-black text-amber-700 mt-1 mb-2"><span id="totUrea">0</span> <span class="text-xs font-bold text-gray-600">Kg</span></p>
                                     <div class="text-[10px] space-y-1 font-medium text-left bg-amber-50 p-1.5 rounded">
-                                        <div class="text-green-700 border-b border-amber-200 pb-0.5">Subsidi: <b id="ureaSubsidi">0</b> kg</div>
-                                        <div class="text-red-600 pt-0.5">Non-Sub: <b id="ureaNonSub">0</b> kg</div>
+                                        <div class="text-green-700 border-b border-amber-200 pb-0.5">Sub: <b id="ureaSubsidi">0</b></div>
+                                        <div class="text-red-600 pt-0.5">Non: <b id="ureaNonSub">0</b></div>
                                     </div>
                                 </div>
                                 
-                                <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-sm flex flex-col justify-between">
+                                <div class="bg-white p-3 rounded-lg border border-emerald-200 shadow-sm flex flex-col justify-between">
                                     <span class="text-xs text-gray-500 block font-medium">Total Phonska</span>
                                     <p class="text-xl font-black text-blue-700 mt-1 mb-2"><span id="totNpk">0</span> <span class="text-xs font-bold text-gray-600">Kg</span></p>
                                     <div class="text-[10px] space-y-1 font-medium text-left bg-blue-50 p-1.5 rounded">
-                                        <div class="text-green-700">Subsidi: <b id="phonskaSubsidi">0</b> kg</div>
-                                        <div class="text-blue-500/50 pt-0.5 opacity-0">-</div>
+                                        <div class="text-green-700">Sub: <b id="phonskaSubsidi">0</b></div>
                                     </div>
                                 </div>
                                 
-                                <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-sm flex flex-col justify-between">
-                                    <span class="text-xs text-gray-500 block font-medium">Total KCl (Kalium)</span>
+                                <div class="bg-white p-3 rounded-lg border border-emerald-200 shadow-sm flex flex-col justify-between">
+                                    <span class="text-xs text-gray-500 block font-medium">KCl (Kalium)</span>
                                     <p class="text-xl font-black text-purple-700 mt-1 mb-2"><span id="totKcl">0</span> <span class="text-xs font-bold text-gray-600">Kg</span></p>
-                                    <div class="text-[10px] space-y-1 font-medium text-left bg-purple-50 p-1.5 rounded">
-                                        <div class="text-red-600 pt-0.5">Non-Sub: <b id="kclNonSub">0</b> kg</div>
+                                    <div class="text-[10px] space-y-1 font-medium text-center bg-purple-50 p-1.5 rounded text-red-600">
+                                        <b>Dosis Hemat</b>
+                                    </div>
+                                </div>
+
+                                <div class="bg-white p-3 rounded-lg border border-emerald-200 shadow-sm flex flex-col justify-between">
+                                    <span class="text-xs text-gray-500 block font-medium">Silika & Boron</span>
+                                    <div class="mt-1 mb-2 text-left space-y-1">
+                                        <p class="text-sm font-black text-slate-700"><span id="totSilika">0</span> <span class="text-[10px] font-bold text-gray-500">Ltr (Si)</span></p>
+                                        <p class="text-sm font-black text-slate-700"><span id="totBoron">0</span> <span class="text-[10px] font-bold text-gray-500">Kg/L (B)</span></p>
+                                    </div>
+                                    <div class="text-[9px] font-medium text-center bg-slate-100 p-1 rounded text-slate-600">
+                                        Foliar Spray
                                     </div>
                                 </div>
                             </div>
@@ -175,9 +177,9 @@
                                 <table class="w-full text-left border-collapse text-sm">
                                     <thead>
                                         <tr class="bg-slate-800 text-white font-semibold text-xs md:text-sm tracking-wider">
-                                            <th class="p-4 w-1/4 min-w-[150px] border-r border-slate-700">Tahap / Waktu Riil</th>
-                                            <th class="p-4 w-1/4 min-w-[160px] border-r border-slate-700">Dosis Gabungan Lapangan</th>
-                                            <th class="p-4 w-2/4 min-w-[240px]">Metode Aplikasi & Fokus</th>
+                                            <th class="p-4 w-1/4 min-w-[150px] border-r border-slate-700">Fase / Waktu</th>
+                                            <th class="p-4 w-1/4 min-w-[170px] border-r border-slate-700">Dosis Terjadwal</th>
+                                            <th class="p-4 w-2/4 min-w-[240px]">Strategi Aplikasi & Fokus Tanaman</th>
                                         </tr>
                                     </thead>
                                     <tbody id="bodyTabelPupuk" class="divide-y divide-gray-200 text-gray-700">
@@ -226,7 +228,6 @@
 
             // Ambil Input
             const namaPetani = document.getElementById('namaPetani').value;
-            const alamatPetani = document.getElementById('alamatPetani').value;
             const umurPadi = parseFloat(document.getElementById('varietas').value);
             const luasInput = parseFloat(document.getElementById('luasLahan').value);
             const satuanLahan = document.getElementById('satuanLahan').value;
@@ -251,14 +252,13 @@
                 case 'tegel25': rumpunPerHa = 160000; keteranganJarak = "Tegel 25x25"; break;
                 case 'tegel30': rumpunPerHa = 111111; keteranganJarak = "Tegel 30x30"; break;
                 case 'tegel35': rumpunPerHa = 81632; keteranganJarak = "Tegel 35x35"; break;
-                case 'tegel40': rumpunPerHa = 62500; keteranganJarak = "Tegel 40x40"; break;
             }
             let totalRumpunLahan = Math.round(rumpunPerHa * luasHektar);
 
             // Jadwal HST
             let hstDasar = 5; 
-            let hstSusulan2 = Math.round(umurPadi - 15 - 60); 
-            let hstSusulan1 = Math.round(hstSusulan2 / 2); 
+            let hstSusulan2 = Math.round(umurPadi - 15 - 60); // Sekitar 40 HST
+            let hstSusulan1 = Math.round(hstSusulan2 / 2); // Sekitar 20 HST
 
             const hitungTanggalRiil = (hst) => {
                 let d = new Date(tglTanam.getTime());
@@ -271,64 +271,67 @@
             const tglRiilSusulan2 = hitungTanggalRiil(hstSusulan2);
 
             // ==========================================
-            // LOGIKA MATEMATIKA INTEGRASI SUBSIDI RDKK
+            // LOGIKA MATEMATIKA PENYESUAIAN HARA (HEMAT KCl)
             // ==========================================
-            // 1. Kebutuhan Hara Total untuk Target Lahan (N:20, P:3.5, K:25 per ton)
-            const nTarget = targetHasilAbsolut * 20;
-            const pTarget = targetHasilAbsolut * 3.5;
-            const kTarget = targetHasilAbsolut * 25;
-
-            // 2. Kuota Subsidi Dasar untuk Luas Lahan Ini
+            const nTarget = targetHasilAbsolut * 20; 
+            
+            // Kuota Subsidi Maksimal
             const kuotaUreaSubsidi = Math.round(275 * luasHektar);
-            const kuotaPhonskaSubsidi = Math.round(250 * luasHektar);
+            const kuotaPhonskaSubsidi = Math.round(300 * luasHektar); // Naik 300kg untuk substitusi P & K awal
 
-            // 3. Pasokan Hara yang Didapat dari Jatah Subsidi
             const nDariSubsidi = (kuotaUreaSubsidi * 0.46) + (kuotaPhonskaSubsidi * 0.15);
             const kDariSubsidi = (kuotaPhonskaSubsidi * 0.15);
             
-            // 4. Hitung Defisit Hara
+            // Defisit N
             const defisitN = Math.max(0, nTarget - nDariSubsidi);
-            const defisitK = Math.max(0, kTarget - kDariSubsidi);
-
-            // 5. Tambahan Pupuk Non-Subsidi untuk Menutup Defisit
             const tambahanUreaNonSub = Math.ceil(defisitN / 0.46);
+
+            // STRATEGI HEMAT KCl:
+            // Karena K mahal, kita asumsikan 50-60% Kalium berasal dari tanah & jerami yang dikembalikan.
+            // Target ideal K adalah 25kg/ton. Kita pangkas target yang harus dipenuhi pupuk kimia menjadi hanya 12.5kg/ton.
+            const kTargetRealistis = targetHasilAbsolut * 12.5; 
+            const defisitK = Math.max(0, kTargetRealistis - kDariSubsidi);
             const tambahanKclNonSub = Math.ceil(defisitK / 0.60);
 
-            // 6. Total Fisik Gabungan
+            // Total Fisik Pupuk
             const totalUreaAkhir = kuotaUreaSubsidi + tambahanUreaNonSub;
             const totalPhonskaAkhir = kuotaPhonskaSubsidi;
             const totalKclAkhir = tambahanKclNonSub;
             const totalOrganikAkhir = Math.round(200 * targetHasilAbsolut); // 200kg per ton gabah
+            
+            // Kebutuhan Silika & Boron (Untuk Lahan)
+            const totalSilika = (0.5 * targetHasilAbsolut).toFixed(1); // Asumsi 0.5 Liter per target 1 Ton
+            const totalBoron = (0.2 * targetHasilAbsolut).toFixed(1);  // Asumsi 0.2 Kg/L per target 1 Ton
 
             // ==========================================
-            // DISTRIBUSI APLIKASI
+            // DISTRIBUSI APLIKASI (PERBAIKAN PROPORSI FASE)
             // ==========================================
+            // Dosis awal dikurangi drastis agar tidak hilang, dipindah ke fase vegetatif & generatif
             const d = {
                 dasar: { 
                     organik: totalOrganikAkhir, 
-                    npk: Math.round(totalPhonskaAkhir * 0.50),
-                    urea: Math.round(totalUreaAkhir * 0.30),
+                    npk: Math.round(totalPhonskaAkhir * 0.30), // Hanya 30%
+                    urea: Math.round(totalUreaAkhir * 0.20),   // Hanya 20%
                     kcl: 0 
                 },
                 susulan1: { 
-                    npk: totalPhonskaAkhir - Math.round(totalPhonskaAkhir * 0.50), 
-                    urea: Math.round(totalUreaAkhir * 0.40),
+                    npk: Math.round(totalPhonskaAkhir * 0.40), // 40% untuk pacu anakan
+                    urea: Math.round(totalUreaAkhir * 0.40),   // 40% untuk pacu anakan
                     kcl: 0 
                 },
                 susulan2: { 
-                    npk: 0, 
-                    urea: totalUreaAkhir - Math.round(totalUreaAkhir * 0.30) - Math.round(totalUreaAkhir * 0.40),
+                    npk: totalPhonskaAkhir - Math.round(totalPhonskaAkhir * 0.30) - Math.round(totalPhonskaAkhir * 0.40), // Sisa 30%
+                    urea: totalUreaAkhir - Math.round(totalUreaAkhir * 0.20) - Math.round(totalUreaAkhir * 0.40),         // Sisa 40%
                     kcl: totalKclAkhir 
                 }
             };
 
             // TAMPILKAN PROFIL KE UI
             document.getElementById('resNamaPetani').innerText = namaPetani;
-            document.getElementById('resAlamatPetani').innerText = "Blok/Lokasi: " + alamatPetani;
             document.getElementById('resLuasHektar').innerText = luasHektar.toFixed(3);
             document.getElementById('resLuasBata').innerText = Math.round(luasBata);
             document.getElementById('resModelJarak').innerText = keteranganJarak;
-            document.getElementById('resTotalRumpun').innerText = totalRumpunLahan.toLocaleString('id-ID') + " Rumpun";
+            document.getElementById('resTotalRumpun').innerText = totalRumpunLahan.toLocaleString('id-ID');
             document.getElementById('resTarget').innerText = targetHasilAbsolut;
             document.getElementById('resTglTanamOtomatis').innerText = tglTanamFormatMenu;
 
@@ -343,7 +346,9 @@
             document.getElementById('phonskaSubsidi').innerText = kuotaPhonskaSubsidi.toLocaleString('id-ID');
 
             document.getElementById('totKcl').innerText = totalKclAkhir.toLocaleString('id-ID');
-            document.getElementById('kclNonSub').innerText = tambahanKclNonSub.toLocaleString('id-ID');
+            
+            document.getElementById('totSilika').innerText = totalSilika;
+            document.getElementById('totBoron').innerText = totalBoron;
 
             // Render Tabel
             renderTabelHasil(tglRiilDasar, tglRiilSusulan1, tglRiilSusulan2, hstDasar, hstSusulan1, hstSusulan2, d);
@@ -352,37 +357,8 @@
             document.getElementById('placeholderHasil').classList.add('hidden');
             document.getElementById('kontenHasil').classList.remove('hidden');
 
-            // Handle Mode Offline
-            if(SCRIPT_URL === "URL_APLIKASI_WEB_APPS_SCRIPT_ANDA") {
-                console.log("Kalkulasi selesai.");
-                btn.disabled = false;
-                btn.innerHTML = "<span>🚀 Analisis & Hitung Ulang Data</span>";
-                return; 
-            }
-
-            // PROSES KIRIM DATA (Jika Digunakan)
-            const payload = {
-                nama: namaPetani,
-                target_ton: targetHasilAbsolut,
-                kebutuhan_urea_total: totalUreaAkhir,
-                kebutuhan_kcl_nonsub: totalKclAkhir
-            };
-
-            fetch(SCRIPT_URL, {
-                method: "POST", mode: "no-cors",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            })
-            .then(() => {
-                alert("Data berhasil tersimpan!");
-                btn.disabled = false;
-                btn.innerHTML = "<span>🚀 Analisis & Hitung Ulang Data</span>";
-            })
-            .catch(err => {
-                console.error(err);
-                btn.disabled = false;
-                btn.innerHTML = "<span>🚀 Analisis & Hitung Ulang Data</span>";
-            });
+            btn.disabled = false;
+            btn.innerHTML = "<span>🚀 Analisis & Hitung Ulang Data</span>";
         }
 
         function renderTabelHasil(tglRiilDasar, tglRiilSusulan1, tglRiilSusulan2, hstDasar, hstSusulan1, hstSusulan2, d) {
@@ -398,8 +374,8 @@
                         ${d.dasar.npk > 0 ? `<div>• NPK Phonska: <span class="font-bold text-blue-700">${d.dasar.npk} kg</span></div>` : ''}
                         <div class="text-xs text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md font-semibold mt-2 inline-block">+ Organik: ${d.dasar.organik} kg</div>
                     </td>
-                    <td class="p-4 align-top text-xs md:text-sm">
-                        <p>Diaplikasikan pada <b>${hstDasar} HST</b>. Fase kritis inisiasi pembentukan akar oleh unsur Phospat dari pupuk subsidi.</p>
+                    <td class="p-4 align-top text-xs md:text-sm leading-relaxed">
+                        <p>Diaplikasikan pada <b>${hstDasar} HST</b>. Dosis awal <b>sengaja ditekan rendah</b> agar pupuk tidak banyak terbuang menguap, karena perakaran muda belum mampu menyerap hara berlebih.</p>
                     </td>
                 </tr>
                 <tr class="hover:bg-gray-50/80 transition">
@@ -410,9 +386,10 @@
                     <td class="p-4 border-r border-gray-100 font-medium space-y-1 text-gray-900">
                         ${d.susulan1.urea > 0 ? `<div>• Urea: <span class="font-bold text-amber-700">${d.susulan1.urea} kg</span></div>` : ''}
                         ${d.susulan1.npk > 0 ? `<div>• NPK Phonska: <span class="font-bold text-blue-700">${d.susulan1.npk} kg</span></div>` : ''}
+                        <div class="text-xs text-slate-700 bg-slate-100 border border-slate-200 px-2 py-1 rounded-md font-semibold mt-2 inline-block">🧪 + Semprot Pupuk Silika</div>
                     </td>
-                    <td class="p-4 align-top text-xs md:text-sm">
-                        <p>Diaplikasikan pada <b>${hstSusulan1} HST</b>. Memacu pembentukan anakan padi aktif berkat pasokan Nitrogen.</p>
+                    <td class="p-4 align-top text-xs md:text-sm leading-relaxed">
+                        <p>Aplikasi puncak di <b>${hstSusulan1} HST</b>. Dosis dibesarkan untuk memacu anakan. <b>Semprotan Silika (Si)</b> mulai diberikan agar dinding sel batang tebal, kuat menahan beban, dan tidak mudah direbahkan angin.</p>
                     </td>
                 </tr>
                 <tr class="hover:bg-gray-50/80 transition">
@@ -422,10 +399,12 @@
                     </td>
                     <td class="p-4 border-r border-gray-100 font-medium space-y-1 text-gray-900">
                         ${d.susulan2.urea > 0 ? `<div>• Urea: <span class="font-bold text-amber-700">${d.susulan2.urea} kg</span></div>` : ''}
-                        ${d.susulan2.kcl > 0 ? `<div>• KCl (Kalium): <span class="font-bold text-purple-700">${d.susulan2.kcl} kg</span> <span class="badge-subsidi text-[10px] text-red-600 bg-red-50 ml-1 px-1.5 py-0.5 rounded font-bold">Non-Sub</span></div>` : ''}
+                        ${d.susulan2.npk > 0 ? `<div>• NPK Phonska: <span class="font-bold text-blue-700">${d.susulan2.npk} kg</span></div>` : ''}
+                        ${d.susulan2.kcl > 0 ? `<div>• KCl (Kalium): <span class="font-bold text-purple-700">${d.susulan2.kcl} kg</span></div>` : ''}
+                        <div class="text-xs text-slate-700 bg-slate-100 border border-slate-200 px-2 py-1 rounded-md font-semibold mt-2 inline-block">🧪 + Semprot Silika & Boron</div>
                     </td>
-                    <td class="p-4 align-top text-xs md:text-sm">
-                        <p>Diaplikasikan pada <b>${hstSusulan2} HST</b> (Fase Bunting/Primordia). Sangat krusial! Tambahan KCl ini yang bertugas memastikan target panen berat tercapai (bulir bernas).</p>
+                    <td class="p-4 align-top text-xs md:text-sm leading-relaxed">
+                        <p>Pada <b>${hstSusulan2} HST</b> (Fase Bunting). Kombinasi KCl hemat + semprotan <b>Boron</b> difokuskan mutlak untuk menjaga viabilitas bunga agar target panen berat tercapai (mencegah gabah hampa ujung).</p>
                     </td>
                 </tr>
             `;
